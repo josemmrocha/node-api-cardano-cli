@@ -25,6 +25,21 @@ var commands = express.Router();
 commands.route('/utxos')
   .get(CommandCtrl.getUtxos);
 
+commands.route('/policyId')
+  .get(CommandCtrl.getPolicyId);
+
+  commands.route('/buildTx/:fee/:available/:address/:policy/:utxo/:ix')
+  .get(CommandCtrl.buildTx);
+
+commands.route('/fee')
+  .get(CommandCtrl.getFee);
+
+commands.route('/signTx')
+  .get(CommandCtrl.signTx);
+
+commands.route('/submitTx')
+  .get(CommandCtrl.submitTx);
+
 app.use('/api', commands);
 
 app.listen(4200, function() {

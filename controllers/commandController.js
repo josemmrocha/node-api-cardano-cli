@@ -1,15 +1,25 @@
 const { exec } = require('child_process');
 
-//GET - Return all tvshows in the DB
-exports.getUtxos = function(req, res) {
+exports.getPolicyId = function(req, res) {
+	exec('cardano-cli transaction policyid --script-file policy.script', (err, stdout, stderr) => {
+  		if (err) {
+			res.send(500, err);
+  		}	
 
+	    console.log(`stdout: ${stdout}`);
+  		console.log(`stderr: ${stderr}`);
+		console.log('GET /policyId');	
+
+		res.status(200).jsonp(stdout);
+	});
+};
+
+exports.getUtxos = function(req, res) {
 	exec('cardano-cli query utxo --address addr1v8tdlrfq86axglt4yw3k945lwrrj5eqzulazgwkq4q8cv0gdgwnye --mainnet', (err, stdout, stderr) => {
   		if (err) {
-    			// node couldn't execute the command
 			res.send(500, err);
   		}
 
-  		// the *entire* stdout and stderr (buffered)
   		console.log(`stdout: ${stdout}`);
   		console.log(`stderr: ${stderr}`);
 		console.log('GET /utxos');
@@ -36,3 +46,88 @@ exports.getUtxos = function(req, res) {
 	});
 };
 
+exports.buildTx = function(req, res) {
+	var fee = req.params.fee;
+	var available = req.params.available;
+	var address = req.params.address;
+	var policy = req.params.policy;
+	var utxo = req.params.utxo;
+	var ix = req.params.ix;
+
+	var returned = fee === 0 ? 0 : available - fee;
+
+	exec(`cardano-cli transaction build-raw \
+	--mary-era \
+	--fee ${fee} \
+	--tx-in ${utxo}#${ix} \
+	--metadata-json-file metadata.json \
+	--tx-out ${address}+${returned}+"1 ${policy}.MountainGorilla + 1 ${policy}.BrownBear"\
+	--mint="1 ${policy}.MountainGorilla + 1 ${policy}.BrownBear"\
+	--out-file matx.raw`, (err, stdout, stderr) => {
+  		if (err) {
+			res.send(500, err);
+  		}	
+
+	    console.log(`stdout: ${stdout}`);
+  		console.log(`stderr: ${stderr}`);
+		console.log('GET /buildTx/' + req.params.fee + '/' + req.params.available);
+
+		res.status(200).jsonp(true);
+	});
+};
+
+exports.getFee = function(req, res) {
+	exec('cardano-cli transaction calculate-min-fee \
+	--tx-body-file matx.raw \
+	--tx-in-count 1 \
+	--tx-out-count 1 \
+	--witness-count 2 \
+	--mainnet \
+	--protocol-params-file protocol.json', (err, stdout, stderr) => {
+  		if (err) {
+			res.send(500, err);
+  		}
+  		console.log(`stdout: ${stdout}`);
+  		console.log(`stderr: ${stderr}`);
+		console.log('GET /fee');
+		var arr = stdout.split(" ");
+		var fee = arr[0];		
+
+		res.status(200).jsonp(fee);
+	});
+};
+
+exports.signTx = function(req, res) {
+	exec('cardano-cli transaction sign \
+	--signing-key-file payment.skey \
+	--signing-key-file policy.skey \
+	--script-file policy.script \
+	--mainnet \
+	--tx-body-file matx.raw \
+	--out-file matx.signed', (err, stdout, stderr) => {
+  		if (err) {
+			res.send(500, err);
+  		}	
+
+	    console.log(`stdout: ${stdout}`);
+  		console.log(`stderr: ${stderr}`);
+		console.log('GET /signTx');	
+
+		res.status(200).jsonp(true);
+	});
+};
+
+exports.submitTx = function(req, res) {
+
+	exec('cardano-cli transaction submit --tx-file  matx.signed --mainnet', (err, stdout, stderr) => {
+  		if (err) {
+			res.send(500, err);
+  		}	
+
+	    console.log(`stdout: ${stdout}`);
+  		console.log(`stderr: ${stderr}`);
+		console.log('GET /submitTx');	
+
+		res.status(200).jsonp(true);
+	});
+};
