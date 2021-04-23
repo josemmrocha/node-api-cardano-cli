@@ -22,13 +22,13 @@ app.use(router);
 // API routes
 var commands = express.Router();
 
-commands.route('/utxos')
+commands.route('/utxos/:addr')
   .get(CommandCtrl.getUtxos);
 
 commands.route('/policyId')
   .get(CommandCtrl.getPolicyId);
 
-  commands.route('/buildTx/:fee/:available/:address/:policy/:utxo/:ix')
+commands.route('/buildTx/:fee/:available/:address/:policy/:utxo/:ix')
   .get(CommandCtrl.buildTx);
 
 commands.route('/fee')

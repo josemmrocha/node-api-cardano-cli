@@ -15,7 +15,9 @@ exports.getPolicyId = function(req, res) {
 };
 
 exports.getUtxos = function(req, res) {
-	exec('cardano-cli query utxo --address addr1v8tdlrfq86axglt4yw3k945lwrrj5eqzulazgwkq4q8cv0gdgwnye --mainnet', (err, stdout, stderr) => {
+	var addr = req.params.addr;
+
+	exec(`cardano-cli query utxo --address ${addr} --mainnet`, (err, stdout, stderr) => {
   		if (err) {
 			res.send(500, err);
   		}
