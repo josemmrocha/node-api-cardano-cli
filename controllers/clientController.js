@@ -54,7 +54,7 @@ function getEntrantAddress(myAddr, responseGetOuputsFromUtxo) {
     var entrantTx = false;
     var outputs= 'ouputs';
     console.log('Inputs: ' + responseGetOuputsFromUtxo['inputs']);
-    console.log('Ouputs: ' + responseGetOuputsFromUtxo['outputs']);
+    console.log('Ouputs: ' + responseGetOuputsFromUtxo["outputs"]);
     console.log('Ouputs: ' + responseGetOuputsFromUtxo[outputs]);
 
     if (responseGetOuputsFromUtxo[outputs]) {
