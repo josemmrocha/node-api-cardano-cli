@@ -11,17 +11,20 @@ module.exports = {
         };
     },
     httpGet: function (options) {
-        https.get(options, (resp) => {
-            let data = '';
-                    resp.on('data', (chunk) => {
-                data += chunk;
+        return new Promise ((resolve, reject) => {
+            https.get(options, (resp) => {
+                let data = '';
+                        resp.on('data', (chunk) => {
+                    data += chunk;
+                });
+            
+                resp.on('end', () => {
+                    resolve(data);
+                });
+            }).on("error", (err) => {
+                reject(err);
             });
-        
-            resp.on('end', () => {
-                return { data: data, success: true };
-            });
-        }).on("error", (err) => {
-            return { data: undefined, success: false };
         });
+        
     }
 };
