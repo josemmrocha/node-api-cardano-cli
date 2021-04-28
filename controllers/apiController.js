@@ -15,7 +15,6 @@ exports.getAddrUtxos = function(req, res) {
             data += chunk;
         });  
         resp.on('end', () => {
-            console.log(JSON.parse(data).explanation);
             res.status(200).jsonp(data);
         });
     }).on("error", (err) => {
@@ -27,7 +26,7 @@ exports.getAddrUtxos = function(req, res) {
 exports.getTxUtxos = function(req, res) {
     var txHash = req.params.txHash;
 
-    var options = tools.getOptions(blockFrostApiKey, basePath + `addresses/${txHash}/utxos`);
+    var options = tools.getBlockfrostOptions(host, basePath + `addresses/${txHash}/utxos`, blockFrostApiKey);
 
 	https.get(options, (resp) => {
         let data = '';
@@ -35,7 +34,6 @@ exports.getTxUtxos = function(req, res) {
             data += chunk;
         });  
         resp.on('end', () => {
-            console.log(JSON.parse(data).explanation);
             res.status(200).jsonp(data);
         });
     }).on("error", (err) => {
