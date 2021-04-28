@@ -1,15 +1,13 @@
-var http = require('http');
+const https = require('https');
 var baseUrl = 'https://cardano-mainnet.blockfrost.io/api/v0/';
 var blockFrostApiKey = 'XXX';
 
 exports.getAddrUtxos = function(req, res) {
     var address = req.params.addr;
     var url = baseUrl + `addresses/${address}/utxos`;
-    console.log('Url: ' + url);
-	
-    const https = require('https');
+    console.log('Url: ' + url);	
 
-    https.get(url, (resp) => {
+    https.get({'url': url, 'project_id': blockFrostApiKey}, (resp) => {
     let data = '';
 
     // A chunk of data has been received.
@@ -20,10 +18,12 @@ exports.getAddrUtxos = function(req, res) {
     // The whole response has been received. Print out the result.
     resp.on('end', () => {
         console.log(JSON.parse(data).explanation);
+        res.status(200).jsonp(data);
     });
 
     }).on("error", (err) => {
-    console.log("Error: " + err.message);
+        console.log("Error: " + err.message);
+        res.send(500, 'err');
     });
 };
 
