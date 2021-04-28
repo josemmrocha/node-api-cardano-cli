@@ -24,34 +24,34 @@ exports.getUtxos = function(req, res) {
 	exec(`cardano-cli query utxo --address ${addr} --mainnet`, (err, stdout, stderr) => {
   		if (err) {
 			console.log(`err: ${err}`);
-			res.send(500, err);
+			res.status(500).send(err);
   		}
-		if (stderr) {
+		else if (stderr) {
 			console.log(`stderr: ${stderr}`);
-			res.send(500, stderr);
-  		}
-
-		console.log('GET /utxos');
-		var lines = stdout.split("\n");
-		var utxoInfos = [];
-		var cont = 0;
-		lines.forEach(line => {
-			if (cont !== 0 && cont !== 1 && line) {
-				var localUtxo = line.substring(0,64);
-				var localIx = line.substring(69).substring(0,9).trim();
-				var allArr = line.substring(78).split(" ");
-				var localAvailable = allArr[0];
-				var utxoInfo = {
-					utxo: localUtxo,
-					ix: localIx,
-					available: localAvailable
-				};
-				utxoInfos.push(utxoInfo);
-			}
-			cont++;
-		});
-
-		res.status(200).jsonp(utxoInfos);
+			res.status(500).send(stderr);
+  		} else if (stdout) {
+			console.log('GET /utxos');
+			var lines = stdout.split("\n");
+			var utxoInfos = [];
+			var cont = 0;
+			lines.forEach(line => {
+				if (cont !== 0 && cont !== 1 && line) {
+					var localUtxo = line.substring(0,64);
+					var localIx = line.substring(69).substring(0,9).trim();
+					var allArr = line.substring(78).split(" ");
+					var localAvailable = allArr[0];
+					var utxoInfo = {
+						utxo: localUtxo,
+						ix: localIx,
+						available: localAvailable
+					};
+					utxoInfos.push(utxoInfo);
+				}
+				cont++;
+			});
+	
+			res.status(200).jsonp(utxoInfos);
+		} 
 	});
 };
 
