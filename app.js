@@ -11,6 +11,7 @@ app.use(methodOverride());
 // Import Models and controllers
 //var models     = require('./models/tvshow')(app, mongoose);
 var CommandCtrl = require('./controllers/commandController');
+var ApiCtrl = require('./controllers/apiController');
 
 // Example route
 var router = express.Router();
@@ -39,6 +40,12 @@ commands.route('/signTx')
 
 commands.route('/submitTx')
   .get(CommandCtrl.submitTx);
+
+commands.route('/txUtxos/:txHash')
+  .get(ApiCtrl.getTxUtxos);
+
+commands.route('/txUtxos/:addr')
+  .get(ApiCtrl.getAddrUtxos);
 
 app.use('/api', commands);
 

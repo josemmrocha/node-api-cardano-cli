@@ -120,7 +120,6 @@ exports.signTx = function(req, res) {
 };
 
 exports.submitTx = function(req, res) {
-
 	exec('cardano-cli transaction submit --tx-file  matx.signed --mainnet', (err, stdout, stderr) => {
   		if (err) {
 			res.send(500, err);
