@@ -61,9 +61,8 @@ function getEntrantAddress(myAddr, responseGetOuputsFromUtxo) {
         if (entrantTx) {
             var sentAdaToAddr = '';
             responseGetOuputsFromUtxo.outputs.forEach(output => {
-                if (output.address !== myAddr) {
+                if (output.address !== myAddr && !sentAdaToAddr) {
                     sentAdaToAddr = output.address;
-                    break;
                 } 
             });
             console.log('Send ADA to addr: ' + sentAdaToAddr);
