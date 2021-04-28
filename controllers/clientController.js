@@ -41,8 +41,9 @@ exports.scanAddrTxAndSend = function(req, res) {
     getAllTx(address).then(
         (responseGetAllTx) => {
             if (responseGetAllTx) {
-                console.log(`There are ${responseGetAllTx.length} txs in this address`);
-                responseGetAllTx.forEach(tx => {
+                var allTxs = JSON.parse(responseGetAllTx);
+                console.log(`There are ${allTxs.length} txs in this address`);
+                allTxs.forEach(tx => {
                     console.log(`Getting utxos for tx: ${tx}`);
                     getOuputsFromUtxo(tx).then(
                         (responseGetOuputsFromUtxo) => {
