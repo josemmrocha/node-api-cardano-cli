@@ -14,8 +14,11 @@ exports.scanAndSend = function(req, res) {
                     getOuputsFromUtxo(element.utxo).then(
                         (responseGetOuputsFromUtxo) => {
                             var addressToSend = getEntrantAddress(address, responseGetOuputsFromUtxo);
-                            createAndSendTx(element.available, address, addressToSend, 
-                                policyIdTestNFT, element.utxo, element.ix, true);
+
+                            if (addressToSend) {
+                                createAndSendTx(element.available, address, addressToSend, 
+                                    policyIdTestNFT, element.utxo, element.ix, true);
+                            }
                         },
                         (errorGetOuputsFromUtxo) => {
                             res.status(500).send('err');

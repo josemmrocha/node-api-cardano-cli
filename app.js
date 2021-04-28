@@ -39,7 +39,10 @@ commands.route('/buildTx/:fee/:available/:nftAddress/:paymentAddress/:policy/:ut
 commands.route('/fee/:usePath')
   .get(CommandCtrl.getFee);
 
-commands.route('/signTx/:usePath')
+commands.route('/signTxMint/:usePath')
+  .get(CommandCtrl.signTxMint);
+
+  commands.route('/signTx/:usePath')
   .get(CommandCtrl.signTx);
 
 commands.route('/submitTx/:usePath')
