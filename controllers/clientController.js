@@ -4,9 +4,11 @@ exports.scanAndSend = function(req, res) {
     var address = req.params.addr;
     var response = getAddrTxs(address);
 
-    response.forEach(element => {
-        console.log('Element TX HASH: ' + element.utxo);
-    });
+    if (response) {
+        response.forEach(element => {
+            console.log('Element TX HASH: ' + element.utxo);
+        });
+    }
 };
 
 getAddrTxs = function(addr) {
@@ -14,7 +16,9 @@ getAddrTxs = function(addr) {
 
     (async () => {
         try {
-            return await axios.get(url);
+            var response = await axios.get(url);
+            console.log(response);
+            return response;
         } catch (error) {
             console.log(error.response.body);
         }
