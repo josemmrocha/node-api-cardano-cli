@@ -7,7 +7,7 @@ var blockFrostApiKey = 'XXX';
 exports.getAddrUtxos = function(req, res) {
     var address = req.params.addr;
 
-    var options = tools.getOptions(blockFrostApiKey, basePath + `addresses/${address}/utxos`);
+    var options = tools.getBlockfrostOptions(host, basePath + `addresses/${address}/utxos`, blockFrostApiKey);
     var response = tools.httpGet(options);
 
     if (response.success) {
