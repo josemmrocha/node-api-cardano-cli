@@ -8,7 +8,7 @@ exports.getAddrUtxos = function(req, res) {
     var address = req.params.addr;
 
     var options = tools.getBlockfrostOptions(host, basePath + `addresses/${address}/utxos`, blockFrostApiKey);
-    var response = tools.httpGet(options);
+    var response = await tools.httpGet(options);
 
     if (response.success) {
         res.status(200).jsonp(data);
