@@ -50,25 +50,21 @@ async function getOuputsFromUtxo(txHash) {
     }   
 }
 
-function getEntrantAddress(myAddr, responseGetOuputsFromUtxo) {
+function getEntrantAddress(myAddr, responseGetOuputsFromUtxos) {
     var entrantTx = false;
-    var outputs= 'ouputs';
-    console.log('Inputs: ' + responseGetOuputsFromUtxo['inputs']);
-    console.log('Ouputs: ' + responseGetOuputsFromUtxo["outputs"]);
-    console.log('Ouputs: ' + responseGetOuputsFromUtxo[outputs]);
-
-    if (responseGetOuputsFromUtxo[outputs]) {
-        console.log('Ouputs length: ' + responseGetOuputsFromUtxo[outputs].length);
-    }
+    var responseGetOuputsFromUtxo = JSON.parse(responseGetOuputsFromUtxos);
 
     if (responseGetOuputsFromUtxo && responseGetOuputsFromUtxo.outputs && responseGetOuputsFromUtxo.outputs.length > 0) {
         responseGetOuputsFromUtxo.outputs.forEach(output => {
-            console.log('Addr: ' + output.address + '. Qty: ' + output.amount.quantity);
-            if (output.address === myAddr && output.amount.quantity >= 2000000) { // 10000000 = 10 ADA
-                entrantTx = true;
+            if (output.address === myAddr) { // 10000000 = 10 ADA
+                output.amount.forEach(element => {
+                    console.log('Addr: ' + output.address + '. Qty: ' + element.quantity);
+                    if (element.quantity >= 2000000) {
+                        entrantTx = true;
+                    }
+                });
             } 
         });
-        console.log('entrantTx: ' + entrantTx);
         if (entrantTx) {
             var sentAdaToAddr = '';
             responseGetOuputsFromUtxo.outputs.forEach(output => {
