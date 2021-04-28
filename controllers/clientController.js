@@ -2,6 +2,8 @@ const axios = require('axios');
 
 exports.scanAndSend = function(req, res) {
     var address = req.params.addr;
+    res.send(200, 'running');
+
     getUtxos(address).then(
         (response) => {
             if (response) {
@@ -51,7 +53,3 @@ async function getOuputsFromUtxo(txHash) {
         return undefined;
     }   
 }
-
-function finish() {
-    res.send(200, true);
-} 
