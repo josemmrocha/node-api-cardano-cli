@@ -26,19 +26,23 @@ var commands = express.Router();
 commands.route('/utxos/:addr')
   .get(CommandCtrl.getUtxos);
 
-commands.route('/policyId')
+commands.route('/policyId/:path')
   .get(CommandCtrl.getPolicyId);
 
-commands.route('/buildTx/:fee/:available/:address/:policy/:utxo/:ix')
+commands.route('/buildTxToMint/:fee/:available/:address/:policy/:utxo/:ix/:path')
   .get(CommandCtrl.buildTx);
 
-commands.route('/fee')
+commands.route('/buildTx/:fee/:available/:nftAddress/:paymentAddress/:policy/:utxo/:ix/:path')
+  .get(CommandCtrl.buildTx);
+
+
+commands.route('/fee/:path')
   .get(CommandCtrl.getFee);
 
-commands.route('/signTx')
+commands.route('/signTx/:path')
   .get(CommandCtrl.signTx);
 
-commands.route('/submitTx')
+commands.route('/submitTx/:path')
   .get(CommandCtrl.submitTx);
 
 commands.route('/txUtxos/:txHash')

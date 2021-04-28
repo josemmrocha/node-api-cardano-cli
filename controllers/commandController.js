@@ -1,7 +1,9 @@
 const { exec } = require('child_process');
 
 exports.getPolicyId = function(req, res) {
-	exec('cardano-cli transaction policyid --script-file policy.script', (err, stdout, stderr) => {
+	var path = req.params.path;
+
+	exec(`cardano-cli transaction policyid --script-file ${path}policy.script`, (err, stdout, stderr) => {
 		if (err) {
 			console.log(`err: ${err}`);
 			res.send(500, err);
@@ -55,13 +57,14 @@ exports.getUtxos = function(req, res) {
 	});
 };
 
-exports.buildTx = function(req, res) {
+exports.buildTxToMint = function(req, res) {
 	var fee = req.params.fee;
 	var available = req.params.available;
 	var address = req.params.address;
 	var policy = req.params.policy;
 	var utxo = req.params.utxo;
 	var ix = req.params.ix;
+	var path = req.params.path;
 
 	var returned = fee === 0 ? 0 : available - fee;
 
@@ -89,14 +92,54 @@ exports.buildTx = function(req, res) {
 	});
 };
 
+exports.buildTx = function(req, res) {
+	var fee = req.params.fee;
+	var available = req.params.available;
+	var nftAddress = req.params.nftAddress;
+	var paymentAddress = req.params.paymentAddress;
+	var policy = req.params.policy;
+	var utxo = req.params.utxo;
+	var ix = req.params.ix;
+	var path = req.params.path;
+
+	var transactionAmount = 1500000; // 10000000 = 10 ADA
+
+	var returnedToNftAddr = fee === 0 ? 0 : available - fee - transactionAmount;
+	var sendToBuyerAddr = fee === 0 ? 0 : transactionAmount;
+
+	exec(`cardano-cli transaction build-raw \
+	--mary-era \
+	--fee ${fee} \
+	--tx-in ${utxo}#${ix} \
+	--tx-out ${nftAddress}+${returnedToNftAddr}\
+	--tx-out ${paymentAddress}+${sendToBuyerAddr}\
+	--out-file ${path}matx.raw`, (err, stdout, stderr) => {
+		if (err) {
+			console.log(`err: ${err}`);
+			res.send(500, err);
+  		}
+		if (stderr) {
+			console.log(`stderr: ${stderr}`);
+			res.send(500, stderr);
+  		}	
+
+	    console.log(`stdout: ${stdout}`);
+		console.log('GET /buildTx/' + req.params.fee + '/' + req.params.available);
+
+		res.status(200).jsonp(true);
+	});
+};
+
 exports.getFee = function(req, res) {
-	exec('cardano-cli transaction calculate-min-fee \
-	--tx-body-file matx.raw \
+	var path = req.params.path;
+
+	exec(`cardano-cli transaction calculate-min-fee \
+	--tx-body-file ${path}matx.raw \
 	--tx-in-count 1 \
 	--tx-out-count 1 \
 	--witness-count 2 \
 	--mainnet \
-	--protocol-params-file protocol.json', (err, stdout, stderr) => {
+	--protocol-params-file ${path}protocol.json`, (err, stdout, stderr) => {
 		if (err) {
 			console.log(`err: ${err}`);
 			res.send(500, err);
@@ -115,13 +158,15 @@ exports.getFee = function(req, res) {
 };
 
 exports.signTx = function(req, res) {
-	exec('cardano-cli transaction sign \
-	--signing-key-file payment.skey \
-	--signing-key-file policy.skey \
-	--script-file policy.script \
+	var path = req.params.path;
+
+	exec(`cardano-cli transaction sign \
+	--signing-key-file ${path}payment.skey \
+	--signing-key-file ${path}policy.skey \
+	--script-file ${path}policy.script \
 	--mainnet \
-	--tx-body-file matx.raw \
-	--out-file matx.signed', (err, stdout, stderr) => {
+	--tx-body-file ${path}matx.raw \
+	--out-file ${path}matx.signed`, (err, stdout, stderr) => {
 		if (err) {
 			console.log(`err: ${err}`);
 			res.send(500, err);
@@ -139,7 +184,9 @@ exports.signTx = function(req, res) {
 };
 
 exports.submitTx = function(req, res) {
-	exec('cardano-cli transaction submit --tx-file  matx.signed --mainnet', (err, stdout, stderr) => {
+	var path = req.params.path;
+
+	exec(`cardano-cli transaction submit --tx-file  ${path}matx.signed --mainnet`, (err, stdout, stderr) => {
 		if (err) {
 			console.log(`err: ${err}`);
 			res.send(500, err);
