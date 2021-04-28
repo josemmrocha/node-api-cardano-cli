@@ -49,6 +49,6 @@ commands.route('/txUtxos/:addr')
 
 app.use('/api', commands);
 
-app.listen(8080, function() {
-  console.log("Node server running on http://localhost:8080");
+app.listen(4200, function() {
+  console.log("Node server running on http://localhost:4200");
 });
