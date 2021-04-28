@@ -8,6 +8,8 @@ exports.scanAndSend = function(req, res) {
         response.forEach(element => {
             console.log('Element TX HASH: ' + element.utxo);
         });
+    } else {
+        res.send(500, 'err');
     }
 };
 
@@ -20,7 +22,8 @@ getAddrTxs = function(addr) {
             console.log(response);
             return response;
         } catch (error) {
-            console.log(error.response.body);
+            console.log(error);
+            return undefined;
         }
     })();
 }
