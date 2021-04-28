@@ -1,5 +1,3 @@
-const https = require('https');
-
 module.exports = {
     getBlockfrostOptions: function (host, path, blockFrostApiKey) {
         return {
