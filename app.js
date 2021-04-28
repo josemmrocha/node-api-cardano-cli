@@ -44,7 +44,7 @@ commands.route('/submitTx')
 commands.route('/txUtxos/:txHash')
   .get(ApiCtrl.getTxUtxos);
 
-commands.route('/txUtxos/:addr')
+commands.route('/addrUtxos/:addr')
   .get(ApiCtrl.getAddrUtxos);
 
 app.use('/api', commands);
