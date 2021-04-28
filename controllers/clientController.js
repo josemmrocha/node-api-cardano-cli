@@ -1,5 +1,4 @@
 const axios = require('axios');
-const { signTx, submitTx } = require('./commandController');
 var tools = require('./tools/tools');
 const policyIdTestNFT = '79d04870cc49ea029f95e7ad19576981620b4665b921c95f79b2a726';
 
