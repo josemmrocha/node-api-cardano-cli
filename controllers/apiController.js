@@ -26,7 +26,7 @@ exports.getAddrUtxos = function(req, res) {
 exports.getTxUtxos = function(req, res) {
     var txHash = req.params.txHash;
 
-    var options = tools.getBlockfrostOptions(host, basePath + `addresses/${txHash}/utxos`, blockFrostApiKey);
+    var options = tools.getBlockfrostOptions(host, basePath + `txs/${txHash}/utxos`, blockFrostApiKey);
 
 	https.get(options, (resp) => {
         let data = '';
