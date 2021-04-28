@@ -1,11 +1,13 @@
 var http = require('http');
 var baseUrl = 'https://cardano-mainnet.blockfrost.io/api/v0/';
+var blockFrostApiKey = 'XXX';
 
 exports.getAddrUtxos = function(req, res) {
     var address = req.params.addr;
     var url = baseUrl + `addresses/${address}/utxos`;
+    console.log('Url: ' + url);
 	var request = http.request({'url': url,
-                            'project_id': 'XXXX'
+                            'project_id': blockFrostApiKey
                            }, 
                             function (response) {
                              console.log('STATUS: ' + response.statusCode);
@@ -25,8 +27,9 @@ exports.getAddrUtxos = function(req, res) {
 exports.getTxUtxos = function(req, res) {
     var txHash = req.params.txHash;
     var url = baseUrl + `txs/${txHash}/utxos`;
+    console.log('Url: ' + url);
 	var request = http.request({'url': url,
-                            'project_id': 'XXXX'
+                            'project_id': blockFrostApiKey
                            }, 
                             function (response) {
                              console.log('STATUS: ' + response.statusCode);
