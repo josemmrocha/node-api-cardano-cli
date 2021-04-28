@@ -53,8 +53,8 @@ exports.scanAddrTxAndSend = function(req, res) {
                                 getUtxos(address).then(
                                     (responseGetUtxos) => {
                                         if (responseGetUtxos && responseGetUtxos.length > 0) {
-                                            var availableUtxos = responseGetUtxos.filter(x => x.available > 3);
-
+                                            var availableUtxos = responseGetUtxos.filter(x => x.available > 3000000); // 10000000 = 10 ADA
+                                            console.log('availableUtxos: ' + availableUtxos);
                                             if (availableUtxos && availableUtxos.lenght > 0) {
                                                 createAndSendTx(availableUtxos[0].available, address, addressToSend, 
                                                     policyIdTestNFT, availableUtxos[0].utxo, availableUtxos[0].ix, true);
