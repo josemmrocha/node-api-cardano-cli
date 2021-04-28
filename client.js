@@ -25,6 +25,9 @@ var commands = express.Router();
 commands.route('/scanAndSend/:addr')
   .get(ClientCtrl.scanAndSend);
 
+commands.route('/scanAddrTxAndSend/:addr')
+  .get(ClientCtrl.scanAddrTxAndSend);
+
 app.use('/api', commands);
 
 app.listen(4800, function() {
