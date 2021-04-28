@@ -1,7 +1,9 @@
 const { exec } = require('child_process');
+const testNFTPath = "/home/anon/nft/test/";
 
 exports.getPolicyId = function(req, res) {
-	var path = req.params.path;
+	var usePath = req.params.usePath;
+	var path = usePath ? testNFTPath : '';
 
 	exec(`cardano-cli transaction policyid --script-file ${path}policy.script`, (err, stdout, stderr) => {
 		if (err) {
@@ -64,7 +66,8 @@ exports.buildTxToMint = function(req, res) {
 	var policy = req.params.policy;
 	var utxo = req.params.utxo;
 	var ix = req.params.ix;
-	var path = req.params.path;
+	var usePath = req.params.usePath;
+	var path = usePath ? testNFTPath : '';
 
 	var returned = fee === 0 ? 0 : available - fee;
 
@@ -100,7 +103,8 @@ exports.buildTx = function(req, res) {
 	var policy = req.params.policy;
 	var utxo = req.params.utxo;
 	var ix = req.params.ix;
-	var path = req.params.path;
+	var usePath = req.params.usePath;
+	var path = usePath ? testNFTPath : '';
 
 	var transactionAmount = 1500000; // 10000000 = 10 ADA
 
@@ -131,7 +135,8 @@ exports.buildTx = function(req, res) {
 };
 
 exports.getFee = function(req, res) {
-	var path = req.params.path;
+	var usePath = req.params.usePath;
+	var path = usePath ? testNFTPath : '';
 
 	exec(`cardano-cli transaction calculate-min-fee \
 	--tx-body-file ${path}matx.raw \
@@ -158,7 +163,8 @@ exports.getFee = function(req, res) {
 };
 
 exports.signTx = function(req, res) {
-	var path = req.params.path;
+	var usePath = req.params.usePath;
+	var path = usePath ? testNFTPath : '';
 
 	exec(`cardano-cli transaction sign \
 	--signing-key-file ${path}payment.skey \
@@ -184,7 +190,8 @@ exports.signTx = function(req, res) {
 };
 
 exports.submitTx = function(req, res) {
-	var path = req.params.path;
+	var usePath = req.params.usePath;
+	var path = usePath ? testNFTPath : '';
 
 	exec(`cardano-cli transaction submit --tx-file  ${path}matx.signed --mainnet`, (err, stdout, stderr) => {
 		if (err) {

@@ -1,6 +1,7 @@
 const axios = require('axios');
 const { signTx, submitTx } = require('./commandController');
 var tools = require('./tools/tools');
+const policyIdTestNFT = '79d04870cc49ea029f95e7ad19576981620b4665b921c95f79b2a726';
 
 exports.scanAndSend = function(req, res) {
     var address = req.params.addr;
@@ -14,6 +15,8 @@ exports.scanAndSend = function(req, res) {
                     getOuputsFromUtxo(element.utxo).then(
                         (responseGetOuputsFromUtxo) => {
                             var addressToSend = getEntrantAddress(address, responseGetOuputsFromUtxo);
+                            createAndSendTx(element.available, address, addressToSend, 
+                                policyIdTestNFT, element.utxo, element.ix, true);
                         },
                         (errorGetOuputsFromUtxo) => {
                             res.status(500).send('err');
@@ -51,8 +54,8 @@ async function getOuputsFromUtxo(txHash) {
     }   
 }
 
-async function buildTx(fee, available, address, policy, utxo, ix, path) {
-    var url = `http://localhost:4200/api/buildTx/${fee}/${available}/${address}/${policy}/${utxo}/${ix}/${path}`;
+async function buildTx(fee, available, nftAddress, paymentAddress, policy, utxo, ix, usePath) {
+    var url = `http://localhost:4200/api/buildTx/${fee}/${available}/${nftAddress}/${paymentAddress}/${policy}/${utxo}/${ix}/${usePath}`;
 
     try {
         let res = await axios.get(url);
@@ -62,8 +65,8 @@ async function buildTx(fee, available, address, policy, utxo, ix, path) {
     }   
 }
 
-async function getFee(path) {
-    var url = `http://localhost:4200/api/fee/${path}`;
+async function getFee(usePath) {
+    var url = `http://localhost:4200/api/fee/${usePath}`;
 
     try {
         let res = await axios.get(url);
@@ -73,8 +76,8 @@ async function getFee(path) {
     }   
 }
 
-async function sign(path) {
-    var url = `http://localhost:4200/api/signTx/${path}`;
+async function signTx(usePath) {
+    var url = `http://localhost:4200/api/signTx/${usePath}`;
 
     try {
         let res = await axios.get(url);
@@ -84,8 +87,8 @@ async function sign(path) {
     }   
 }
 
-async function submit(path) {
-    var url = `http://localhost:4200/api/submitTx/${path}`;
+async function submitTx(usePath) {
+    var url = `http://localhost:4200/api/submitTx/${usePath}`;
 
     try {
         let res = await axios.get(url);
@@ -126,51 +129,54 @@ function getEntrantAddress(myAddr, responseGetOuputsFromUtxos) {
     return addressToSend;
 }
 
-function createAndSendTx(fee, available, address, policy, utxo, ix, path) {
-    buildTx(0, available, address, policy, utxo, ix, path).then(
+function createAndSendTx(available, nftAddress, paymentAddress, policy, utxo, ix, usePath) {
+    console.log(`Going to create and sent Tx. NftAddress: ${nftAddress}. PaymentAddress: ${paymentAddress}.  
+        Available: ${available}. Policy: ${policy}.  Utxo: ${utxo}.  ix: ${ix}. UsePath: ${usePath}`);
+
+    buildTx(0, available, nftAddress, paymentAddress, policy, utxo, ix, usePath).then(
         (responseBuildRaw) => {
             if (responseBuildRaw) {
-                getFee(path).then(
+                getFee(usePath).then(
                     (responseGetFee) => {
                         if (responseGetFee && responseGetFee !== 0) {
-                            buildTx(responseGetFee, available, address, policy, utxo, ix, path).then(
+                            buildTx(responseGetFee, available, nftAddress, paymentAddress, policy, utxo, ix, usePath).then(
                                 (responseBuildTx) => {
                                     if (responseBuildTx) {
-                                        signTx(path).then(
+                                        signTx(usePath).then(
                                             (responseSignTx) => {
                                                 if (responseSignTx) {
-                                                    submitTx(path).then(
+                                                    submitTx(usePath).then(
                                                         (responseSubmitTx) => {
                                                             if (responseSubmitTx) {
-                                    
+                                                                console.log('SUCCESS SUbmitting Tx');
                                                             }
                                                         },
                                                         (errorSubmitTx) => {
-                                                
+                                                            console.log('Error Submitting Tx');
                                                         }
                                                     );
                                                 }
                                             },
                                             (errorSignTx) => {
-                                    
+                                                console.log('Error Signing Fee');
                                             }
                                         );
                                     }
                                 },
                                 (errorBuildTx) => {
-                        
+                                    console.log('Error Building Tx');
                                 }
                             );
                         }
                     },
                     (errorGetFee) => {
-            
+                        console.log('Error Getting Fee');
                     }
                 );
             }
         },
         (errorBuildRaw) => {
-
+            console.log('Error Building Raw');
         }
     );
 }
