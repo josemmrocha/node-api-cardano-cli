@@ -2,30 +2,31 @@ const axios = require('axios');
 
 exports.scanAndSend = function(req, res) {
     var address = req.params.addr;
-    var response = getAddrTxs(address);
-
-    if (response) {
-        response.forEach(element => {
-            console.log('Element TX HASH: ' + element.utxo);
-        });
-    } else {
-        res.send(500, 'err');
-    }
+    getUtxos(address).then((response) => {
+        console.log(response);
+        if (response) {
+            response.forEach(element => {
+                console.log('Element TX HASH: ' + element.utxo);
+            });
+        } else {
+            res.send(500, 'err');
+        }
+      }, (error) => {
+        console.log(error);
+        res.status(500).send('err');
+      });
 };
 
-getAddrTxs = function(addr) {
-    var url = 'localhost:4200/api/' + '/utxos/' + addr;
-    console.log('URL' + url);
+async function getUtxos(addr) {
+    var url = 'http://localhost:4200/api/' + '/utxos/' + addr;
 
-    (async () => {
-        try {
-            console.log('Calling');
-            var response = await axios.get(url);
-            console.log(response);
-            return response;
-        } catch (error) {
-            console.log(error);
-            return undefined;
-        }
-    })();
-}
+    try {
+        let res = await axios.get(url);
+        let data = res.data;
+        console.log(data);
+        return data;
+    } catch (error) {
+        console.log(error);
+        return undefined;
+    }   
+  }
