@@ -52,6 +52,7 @@ async function getOuputsFromUtxo(txHash) {
 
 function getEntrantAddress(myAddr, responseGetOuputsFromUtxo) {
     var entrantTx = false;
+    console.log('Ouputs.lenght: ' + responseGetOuputsFromUtxo);
     console.log('Ouputs.lenght: ' + responseGetOuputsFromUtxo.outputs.length);
 
     if (responseGetOuputsFromUtxo && responseGetOuputsFromUtxo.outputs && responseGetOuputsFromUtxo.outputs.length > 0) {
