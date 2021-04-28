@@ -8,6 +8,7 @@ exports.scanAndSend = function(req, res) {
             response.forEach(element => {
                 console.log('Element TX HASH: ' + element.utxo);
             });
+            res.send(200, response[0].utxo);
         } else {
             res.send(500, 'err');
         }
