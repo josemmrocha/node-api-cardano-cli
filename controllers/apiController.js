@@ -2,7 +2,7 @@ const https = require('https');
 var tools = require('./tools/tools');
 var host = 'cardano-mainnet.blockfrost.io';
 var basePath = '/api/v0/';
-var blockFrostApiKey = 'XXX';
+var blockFrostApiKey = 'xu1QHJibBBNHZX0VE3ITxDPaOGbki9Gu';
 
 exports.getAddrUtxos = function(req, res) {
     var address = req.params.addr;

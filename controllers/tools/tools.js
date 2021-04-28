@@ -18,10 +18,10 @@ module.exports = {
             });
         
             resp.on('end', () => {
-                return { data: data, sucess: true };
+                return { data: data, success: true };
             });
         }).on("error", (err) => {
-            return { data: undefined, sucess: false };
+            return { data: undefined, success: false };
         });
     }
 };
