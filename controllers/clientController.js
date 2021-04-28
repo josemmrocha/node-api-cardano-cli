@@ -1,19 +1,20 @@
 const axios = require('axios');
+var tools = require('./tools/tools');
 
 exports.scanAndSend = function(req, res) {
     var address = req.params.addr;
     res.status(200).send('running');
-
+  
     getUtxos(address).then(
-        (response) => {
-            if (response) {
-                response.forEach(element => {
+        (responseGetUtxos) => {
+            if (responseGetUtxos) {
+                responseGetUtxos.forEach(element => {
                     console.log('Getting inputs for hash: ' + element.utxo);
                     getOuputsFromUtxo(element.utxo).then(
-                        (result) => {
-                            console.log('result: ' + result);
+                        (responseGetOuputsFromUtxo) => {
+                            getEntrantAddress(address, responseGetOuputsFromUtxo);
                         },
-                        (error) => {
+                        (errorGetOuputsFromUtxo) => {
                             res.status(500).send('err');
                         }
                     );
@@ -22,7 +23,7 @@ exports.scanAndSend = function(req, res) {
                 res.status(500).send('err');
             }
         }, 
-        (error) => {
+        (errorGetUtxos) => {
             res.status(500).send('err');
     });
 };
@@ -47,4 +48,25 @@ async function getOuputsFromUtxo(txHash) {
     } catch (error) {
         return undefined;
     }   
+}
+
+function getEntrantAddress(myAddr, responseGetOuputsFromUtxo) {
+    var entrantTx = false;
+    if (responseGetOuputsFromUtxo && responseGetOuputsFromUtxo.outputs && responseGetOuputsFromUtxo.outputs.length > 0) {
+        responseGetOuputsFromUtxo.outputs.forEach(output => {
+            if (output.address === myAddr && output.amount.quantity >= 2000000) { // 10000000 = 10 ADA
+                entrantTx = true;
+            } 
+        });
+        if (entrantTx) {
+            var sentAdaToAddr = '';
+            responseGetOuputsFromUtxo.outputs.forEach(output => {
+                if (output.address !== myAddr) {
+                    sentAdaToAddr = output.address;
+                    break;
+                } 
+            });
+            console.log('Send ADA to addr: ' + sentAdaToAddr);
+        }
+    }
 }

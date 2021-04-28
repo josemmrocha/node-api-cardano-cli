@@ -1,3 +1,5 @@
+const axios = require('axios');
+
 module.exports = {
     getBlockfrostOptions: function (host, path, blockFrostApiKey) {
         return {
@@ -7,5 +9,13 @@ module.exports = {
                 "project_id": blockFrostApiKey
             },
         };
-    }
+    },
+    httpGet: async function (url) {   
+        try {
+            let res = await axios.get(url);
+            return res.data;
+        } catch (error) {
+            return undefined;
+        }   
+    }  
 };
