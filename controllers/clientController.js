@@ -34,8 +34,66 @@ exports.scanAndSend = function(req, res) {
     });
 };
 
+exports.scanAddrTxAndSend = function(req, res) {
+    var address = req.params.addr;
+    res.status(200).send('running');
+  
+    getAllTx(address).then(
+        (responseGetAllTx) => {
+            if (responseGetAllTx) {
+                console.log(`There are ${responseGetAllTx.length} txs in this address`);
+                responseGetAllTx.forEach(tx => {
+                    console.log(`Getting utxos for tx: ${tx}`);
+                    getOuputsFromUtxo(tx).then(
+                        (responseGetOuputsFromUtxo) => {
+                            var addressToSend = getEntrantAddress(address, responseGetOuputsFromUtxo);
+
+                            if (addressToSend) {
+                                getUtxos(address).then(
+                                    (responseGetUtxos) => {
+                                        if (responseGetUtxos && responseGetUtxos.length > 0) {
+                                            var availableUtxos = responseGetUtxos.filter(x => x.available > 3);
+
+                                            if (availableUtxos && availableUtxos.lenght > 0) {
+                                                createAndSendTx(availableUtxos[0].available, address, addressToSend, 
+                                                    policyIdTestNFT, availableUtxos[0].utxo, availableUtxos[0].ix, true);
+                                            }
+                                        } else {
+                                            res.status(500).send('err');
+                                        }
+                                    }, 
+                                    (errorGetUtxos) => {
+                                        res.status(500).send('err');
+                                });
+                            }
+                        },
+                        (errorGetOuputsFromUtxo) => {
+                            res.status(500).send('err');
+                        }
+                    );
+                });
+            } else {
+                res.status(500).send('err');
+            }
+        }, 
+        (errorGetAllTx) => {
+            res.status(500).send('err');
+    });
+};
+
 async function getUtxos(addr) {
     var url = `http://localhost:4200/api/utxos/${addr}`;
+
+    try {
+        let res = await axios.get(url);
+        return res.data;
+    } catch (error) {
+        return undefined;
+    }   
+}
+
+async function getAllTx(addr) {
+    var url = `http://localhost:4200/api/getAllTx/${addr}`;
 
     try {
         let res = await axios.get(url);
@@ -110,7 +168,7 @@ function getEntrantAddress(myAddr, responseGetOuputsFromUtxos) {
             if (output.address === myAddr) { // 10000000 = 10 ADA
                 output.amount.forEach(element => {
                     console.log('Addr: ' + output.address + '. Qty: ' + element.quantity);
-                    if (element.quantity >= 2000000) {
+                    if (element.quantity >= 2000000 && element.unit === 'lovelace') {
                         entrantTx = true;
                     }
                 });
@@ -120,7 +178,11 @@ function getEntrantAddress(myAddr, responseGetOuputsFromUtxos) {
             var sentAdaToAddr = '';
             responseGetOuputsFromUtxo.outputs.forEach(output => {
                 if (output.address !== myAddr && !sentAdaToAddr) {
-                    sentAdaToAddr = output.address;
+                    output.amount.forEach(element => {
+                        if (element.quantity >= 2000000 && element.unit === 'lovelace' && !sentAdaToAddr) {
+                            sentAdaToAddr = output.address;
+                        }
+                    });
                 } 
             });
             console.log(`Send ADA to addr: ${sentAdaToAddr}`);

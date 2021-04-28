@@ -54,6 +54,9 @@ commands.route('/txUtxos/:txHash')
 commands.route('/addrUtxos/:addr')
   .get(ApiCtrl.getAddrUtxos);
 
+commands.route('/getAllTx/:addr')
+  .get(ApiCtrl.getAllTx);
+
 app.use('/api', commands);
 
 app.listen(4200, function() {

@@ -41,3 +41,22 @@ exports.getTxUtxos = function(req, res) {
         res.send(500, 'err');
     });
 };
+
+exports.getAllTx = function(req, res) {
+    var addr = req.params.addr;
+
+    var options = tools.getBlockfrostOptions(host, basePath + `addresses/${addr}/txs`, blockFrostApiKey);
+
+	https.get(options, (resp) => {
+        let data = '';
+        resp.on('data', (chunk) => {
+            data += chunk;
+        });  
+        resp.on('end', () => {
+            res.status(200).jsonp(data);
+        });
+    }).on("error", (err) => {
+        console.log("Error: " + err.message);
+        res.send(500, 'err');
+    });
+};
