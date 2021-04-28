@@ -52,12 +52,16 @@ async function getOuputsFromUtxo(txHash) {
 
 function getEntrantAddress(myAddr, responseGetOuputsFromUtxo) {
     var entrantTx = false;
+    console.log('Ouputs.lenght: ' + responseGetOuputsFromUtxo.outputs.length);
+
     if (responseGetOuputsFromUtxo && responseGetOuputsFromUtxo.outputs && responseGetOuputsFromUtxo.outputs.length > 0) {
         responseGetOuputsFromUtxo.outputs.forEach(output => {
+            console.log('Addr: ' + output.address + '. Qty: ' + output.amount.quantity);
             if (output.address === myAddr && output.amount.quantity >= 2000000) { // 10000000 = 10 ADA
                 entrantTx = true;
             } 
         });
+        console.log('entrantTx: ' + entrantTx);
         if (entrantTx) {
             var sentAdaToAddr = '';
             responseGetOuputsFromUtxo.outputs.forEach(output => {
