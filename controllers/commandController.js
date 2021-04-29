@@ -6,19 +6,15 @@ exports.getPolicyId = function(req, res) {
 	var path = usePath ? testNFTPath : '';
 
 	exec(`cardano-cli transaction policyid --script-file ${path}policy.script`, (err, stdout, stderr) => {
-		if (err) {
+		if (err || stderr) {
 			console.log(`err: ${err}`);
-			res.status(500).jsonp(err);
-  		}
-		if (stderr) {
 			console.log(`stderr: ${stderr}`);
-			res.status(500).jsonp(stderr);
-  		}	
-
-	    console.log(`stdout: ${stdout}`);
-		console.log('GET /policyId');	
-
-		res.status(200).jsonp(stdout);
+			res.status(500).jsonp('');
+  		} else {
+			console.log(`stdout: ${stdout}`);
+			console.log('GET /policyId');	
+			res.status(200).jsonp(stdout);
+		}
 	});
 };
 
@@ -26,14 +22,11 @@ exports.getUtxos = function(req, res) {
 	var addr = req.params.addr;
 
 	exec(`cardano-cli query utxo --address ${addr} --mainnet`, (err, stdout, stderr) => {
-  		if (err) {
+		if (err || stderr) {
 			console.log(`err: ${err}`);
-			res.status(500).jsonp(err);
-  		}
-		else if (stderr) {
 			console.log(`stderr: ${stderr}`);
-			res.status(500).jsonp(stderr);
-  		} else if (stdout) {
+			res.status(500).jsonp([]);
+  		} else {
 			console.log('GET /utxos');
 			var lines = stdout.split("\n");
 			var utxoInfos = [];
@@ -80,19 +73,15 @@ exports.buildTxMint = function(req, res) {
 	--tx-out ${address}+${returned}+"1 ${policy}.${nftIdentifier}"\
 	--mint="1 ${policy}.${nftIdentifier}"\
 	--out-file ${path}matx.raw`, (err, stdout, stderr) => {
-		if (err) {
+		if (err || stderr) {
 			console.log(`err: ${err}`);
-			res.status(500).jsonp(err);
-  		}
-		if (stderr) {
 			console.log(`stderr: ${stderr}`);
-			res.status(500).jsonp(stderr);
-  		}	
-
-	    console.log(`stdout: ${stdout}`);
-		console.log('GET /buildTx/' + req.params.fee + '/' + req.params.available);
-
-		res.status(200).jsonp(true);
+			res.status(500).jsonp(false);
+  		} else {
+			console.log(`stdout: ${stdout}`);
+			console.log('GET /buildTx/' + req.params.fee + '/' + req.params.available);	
+			res.status(200).jsonp(true);
+		}
 	});
 };
 
@@ -119,19 +108,15 @@ exports.buildTx = function(req, res) {
 	--tx-out ${nftAddress}+${returnedToNftAddr}\
 	--tx-out ${paymentAddress}+${sendToBuyerAddr}\
 	--out-file ${path}matx.raw`, (err, stdout, stderr) => {
-		if (err) {
+		if (err || stderr) {
 			console.log(`err: ${err}`);
-			res.status(500).jsonp(err);
-  		}
-		if (stderr) {
 			console.log(`stderr: ${stderr}`);
-			res.status(500).jsonp(stderr);
-  		}	
-
-	    console.log(`stdout: ${stdout}`);
-		console.log('GET /buildTx/' + req.params.fee + '/' + req.params.available);
-
-		res.status(200).jsonp(true);
+			res.status(500).jsonp(false);
+  		} else {
+			console.log(`stdout: ${stdout}`);
+			console.log('GET /buildTx/' + req.params.fee + '/' + req.params.available);
+			res.status(200).jsonp(true);
+		}
 	});
 };
 
@@ -158,19 +143,15 @@ exports.buildTxWithToken = function(req, res) {
 	--tx-out ${nftAddress}+${returnedToNftAddr}\
 	--tx-out ${paymentAddress}+${sendToBuyerAddr}+"1 ${policy}.${nftIdentifier}"\\
 	--out-file ${path}matx.raw`, (err, stdout, stderr) => {
-		if (err) {
+		if (err || stderr) {
 			console.log(`err: ${err}`);
-			res.status(500).jsonp(err);
-  		}
-		if (stderr) {
 			console.log(`stderr: ${stderr}`);
-			res.status(500).jsonp(stderr);
-  		}	
-
-	    console.log(`stdout: ${stdout}`);
-		console.log('GET /buildTx/' + req.params.fee + '/' + req.params.available);
-
-		res.status(200).jsonp(true);
+			res.status(500).jsonp(false);
+  		} else {
+			console.log(`stdout: ${stdout}`);
+			console.log('GET /buildTx/' + req.params.fee + '/' + req.params.available);
+			res.status(200).jsonp(true);
+		}
 	});
 };
 
@@ -185,20 +166,17 @@ exports.getFee = function(req, res) {
 	--witness-count 2 \
 	--mainnet \
 	--protocol-params-file ${path}protocol.json`, (err, stdout, stderr) => {
-		if (err) {
+		if (err || stderr) {
 			console.log(`err: ${err}`);
-			res.status(500).jsonp(err);
-  		}
-		if (stderr) {
 			console.log(`stderr: ${stderr}`);
-			res.status(500).jsonp(stderr);
-  		}
-  		console.log(`stdout: ${stdout}`);
-		console.log('GET /fee');
-		var arr = stdout.split(" ");
-		var fee = arr[0];		
-
-		res.status(200).jsonp(fee);
+			res.status(500).jsonp(0);
+  		} else {
+			console.log(`stdout: ${stdout}`);
+			console.log('GET /fee');
+			var arr = stdout.split(" ");
+			var fee = arr[0];		
+			res.status(200).jsonp(fee);
+		  }
 	});
 };
 
@@ -213,19 +191,15 @@ exports.signTxMint = function(req, res) {
 	--mainnet \
 	--tx-body-file ${path}matx.raw \
 	--out-file ${path}matx.signed`, (err, stdout, stderr) => {
-		if (err) {
+		if (err || stderr) {
 			console.log(`err: ${err}`);
-			res.status(500).jsonp(err);
-  		}
-		if (stderr) {
 			console.log(`stderr: ${stderr}`);
-			res.status(500).jsonp(stderr);
-  		}
-
-	    console.log(`stdout: ${stdout}`);
-		console.log('GET /signTx');	
-
-		res.status(200).jsonp(true);
+			res.status(500).jsonp(false);
+  		} else {
+			console.log(`stdout: ${stdout}`);
+			console.log('GET /signTx');	
+			res.status(200).jsonp(true);
+		  }
 	});
 };
 
@@ -238,19 +212,15 @@ exports.signTx = function(req, res) {
 	--mainnet \
 	--tx-body-file ${path}matx.raw \
 	--out-file ${path}matx.signed`, (err, stdout, stderr) => {
-		if (err) {
+		if (err || stderr) {
 			console.log(`err: ${err}`);
-			res.status(500).jsonp(err);
-  		}
-		if (stderr) {
 			console.log(`stderr: ${stderr}`);
-			res.status(500).jsonp(stderr);
-  		}
-
-	    console.log(`stdout: ${stdout}`);
-		console.log('GET /signTx');	
-
-		res.status(200).jsonp(true);
+			res.status(500).jsonp(false);
+  		} else {
+			console.log(`stdout: ${stdout}`);
+			console.log('GET /signTx');		
+			res.status(200).jsonp(true);
+		  }
 	});
 };
 
@@ -259,19 +229,15 @@ exports.submitTx = function(req, res) {
 	var path = usePath ? testNFTPath : '';
 
 	exec(`cardano-cli transaction submit --tx-file  ${path}matx.signed --mainnet`, (err, stdout, stderr) => {
-		if (err) {
+		if (err || stderr) {
 			console.log(`err: ${err}`);
-			res.status(500).jsonp(err);
-  		}
-		if (stderr) {
 			console.log(`stderr: ${stderr}`);
-			res.status(500).jsonp(stderr);
-  		}
-
-	    console.log(`stdout: ${stdout}`);
-		console.log('GET /submitTx');	
-
-		res.status(200).jsonp(true);
+			res.status(500).jsonp(false);
+  		} else {
+			console.log(`stdout: ${stdout}`);
+			console.log('GET /submitTx');	
+			res.status(200).jsonp(true);
+		  }
 	});
 };
 
@@ -281,19 +247,15 @@ exports.createMetadataFile = function(req, res) {
 	var path = usePath ? testNFTPath : '';
 
 	exec(`echo '${jsonstr}' > ${path}metadata.json`, (err, stdout, stderr) => {
-		if (err) {
+		if (err || stderr) {
 			console.log(`err: ${err}`);
-			res.status(500).jsonp(err);
-  		}
-		if (stderr) {
 			console.log(`stderr: ${stderr}`);
-			res.status(500).jsonp(stderr);
-  		}
-
-	    console.log(`stdout: ${stdout}`);
-		console.log('GET /createMetadataFile');	
-
-		res.status(200).jsonp(true);
+			res.status(500).jsonp(false);
+  		} else {
+			console.log(`stdout: ${stdout}`);
+			console.log('GET /createMetadataFile');	
+			res.status(200).jsonp(true);
+		  } 
 	});
 };
 
