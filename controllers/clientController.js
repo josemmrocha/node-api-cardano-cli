@@ -1,4 +1,5 @@
 const axios = require('axios');
+const { response } = require('express');
 const { createMetadataFile } = require('./commandController');
 var tools = require('./tools/tools');
 const policyIdTestNFT = '79d04870cc49ea029f95e7ad19576981620b4665b921c95f79b2a726';
@@ -85,7 +86,15 @@ exports.scanAddrTxAndSend = function(req, res) {
 };
 
 exports.getProcessedTx = function(req, res) {
-    getProcessedTx();
+    getProcessedTxAsync().then(
+        response => {
+            console.log('PROCESSED RESULT');
+            console.log(result);
+        },
+        error => {
+
+        }
+    );
     res.status(200).send('running');
 }
 
@@ -205,6 +214,15 @@ async function createmetadataFile(jsonstr, usePath) {
     try {
         let res = await axios.get(url);
         return res.data;
+    } catch (error) {
+        return undefined;
+    }   
+}
+
+async function getProcessedTxAsync() {
+    try {
+        let res = await tools.ExecuteGetQueryinDB();
+        return res;
     } catch (error) {
         return undefined;
     }   

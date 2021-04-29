@@ -25,16 +25,17 @@ module.exports = {
             user     : 'nft',
             password : 'nftpassword',
             database: 'nft'
-          });
+        });
           
-          con.connect(function(err) {
+        connection.connect();
+
+        await connection.query(query, function(err, rows, fields) {
             if (err) throw err;
-            await con.query(query, function (err, result, fields) {
-              if (err) throw err;
-              console.log(result);
-              return result;
-            });
-          });
+            console.log('The solution is: ', rows);
+            return rows;
+        });
+
+connection.end();
     },
     ExecuteInsertQueryinDB: function (query) {
         var result;
