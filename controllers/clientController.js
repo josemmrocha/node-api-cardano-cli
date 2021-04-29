@@ -94,7 +94,7 @@ exports.scanAddrTxAndSend = function(req, res) {
 exports.getProcessedTx = function(req, res) {  
     con.connect(function(err) {
         if (err) throw err;
-        con.query(query, function (err, result) {
+        con.query('SELECT * FROM ProcessedTx', function (err, result) {
           if (err) throw err;
           console.log('PROCESSED RESULT');
           console.log(result);
