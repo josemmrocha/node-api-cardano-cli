@@ -99,12 +99,6 @@ exports.getProcessedTx = function(req, res) {
         console.log(rows);
     });
 
-    var txHash = 'test';
-    con.query(`INSERT INTO ProcessedTx (txHash) VALUES ('${txHash}');`, function (err, rows, fields) {
-        if (err) throw err;
-        console.log('Inserted ProcessedTx: ' + txHash);
-    });
-
     con.query('SELECT * FROM TestNft;', function (err, rows, fields) {
         if (err) throw err;
         console.log('TestNft RESULT');
@@ -113,6 +107,12 @@ exports.getProcessedTx = function(req, res) {
         var randomNftFromNonProcessed = nonProcessedNfts[Math.floor(Math.random() * nonProcessedNfts.length)];
         console.log('Random TestNft');
         console.log(randomNftFromNonProcessed.name);
+    });
+
+    var txHash = 'test';
+    con.query(`INSERT INTO ProcessedTx (txHash) VALUES ('${txHash}');`, function (err, rows, fields) {
+        if (err) throw err;
+        console.log('Inserted ProcessedTx: ' + txHash);
     });
 
     var nftName = 'NFTest01';
@@ -338,7 +338,21 @@ function createAndSendTx(available, nftAddress, paymentAddress, policy, utxo, ix
     );
 }
 
-function mintandSendToken(available, addressForNft, paymentAddress, policy, utxo, ix, usePath, nftIdentifier, name, imagePath, location) {
+function selectTokenMintAndSend(available, addressForNft, paymentAddress, policy, utxo, ix, usePath, txHash) {
+    con.query('SELECT * FROM TestNft;', function (err, rows, fields) {
+        if (err) throw err;
+        var nonProcessedNfts = rows.filter(x => x.minted !== true);
+        console.log('NonProcessedNfts: ' + nonProcessedNfts.length);
+        var randomNftFromNonProcessed = nonProcessedNfts[Math.floor(Math.random() * nonProcessedNfts.length)];
+        console.log('Random TestNft Selected. Identifier: ' + randomNftFromNonProcessed.identifier);
+
+        mintandSendToken(available, addressForNft, paymentAddress, policy, utxo, ix, usePath,
+            randomNftFromNonProcessed.nftIdentifier, randomNftFromNonProcessed.name,
+            randomNftFromNonProcessed.imagePath, randomNftFromNonProcessed.location, txHash);
+    });
+}
+
+function mintandSendToken(available, addressForNft, paymentAddress, policy, utxo, ix, usePath, nftIdentifier, name, imagePath, location, txHash) {
     console.log(`Going to mint token. Address: ${addressForNft}. Available: ${available}.  
         Policy: ${policy}.  Utxo: ${utxo}.  ix: ${ix}. 
         UsePath: ${usePath}. NftIdentifier: ${nftIdentifier}.`);
@@ -363,7 +377,7 @@ function mintandSendToken(available, addressForNft, paymentAddress, policy, utxo
                                                                 (responseSubmitTx) => {
                                                                     if (responseSubmitTx) {
                                                                         console.log('SUCCESS Minting TOKEN');
-                                                                         sendToken(available, addressForNft, paymentAddress, policy, utxo, ix, usePath, nftIdentifier);
+                                                                         sendToken(available, addressForNft, paymentAddress, policy, utxo, ix, usePath, nftIdentifier, txHash);
                                                                     }
                                                                 },
                                                                 (errorSubmitTx) => {
@@ -401,7 +415,7 @@ function mintandSendToken(available, addressForNft, paymentAddress, policy, utxo
     );
 }
 
-function sendToken(available, nftAddress, paymentAddress, policy, utxo, ix, usePath, nftIdentifier) {
+function sendToken(available, nftAddress, paymentAddress, policy, utxo, ix, usePath, nftIdentifier, txHash) {
     console.log(`Going to send token. NftAddress: ${nftAddress}. PaymentAddress: ${paymentAddress}.  
         Available: ${available}. Policy: ${policy}.  Utxo: ${utxo}.  ix: ${ix}. UsePath: ${usePath}. 
         NftIdentifier: ${nftIdentifier}`);
@@ -422,6 +436,16 @@ function sendToken(available, nftAddress, paymentAddress, policy, utxo, ix, useP
                                                         (responseSubmitTx) => {
                                                             if (responseSubmitTx) {
                                                                 console.log('SUCCESS Sending Tx');
+                                                                con.query(`INSERT INTO ProcessedTx (txHash) VALUES ('${txHash}');`, function (err, rows, fields) {
+                                                                    if (err) throw err;
+                                                                    console.log('Inserted ProcessedTx: ' + txHash);
+                                                                });
+
+                                                                con.query(`UPDATE TestNft SET minted = true WHERE nftIdentifier = '${nftIdentifier}';
+                                                                UPDATE TestNft SET addressSent = '${paymentAddress}' WHERE nftIdentifier = '${nftIdentifier}';`, function (err, result) {
+                                                                    if (err) throw err;
+                                                                    console.log(result.affectedRows + " record(s) updated (TestNft)");
+                                                                });
                                                             }
                                                         },
                                                         (errorSubmitTx) => {
