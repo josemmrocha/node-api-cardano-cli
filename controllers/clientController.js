@@ -521,7 +521,7 @@ function mintandSendToken(available, addressForNft, paymentAddress, policy, utxo
 }
 
 function sendToken(nftAddress, paymentAddress, policy, usePath, nftIdentifier, txHash) {
-    getUtxos(address).then(
+    getUtxos(nftAddress).then(
         (responseGetUtxos) => {
             if (responseGetUtxos && responseGetUtxos.length > 0) {
                 var availableUtxos = responseGetUtxos.filter(x => x.available > minAvailableQtyInUtxo); //TODO add && contains token
