@@ -133,48 +133,57 @@ exports.buildTxWithToken = function(req, res) {
 	var usePath = req.params.usePath;
 	var nftIdentifier = req.params.nftIdentifier;
 
+	console.log('GET /buildTx/' + fee + '/' + available);
+
 	var path = usePath ? testNFTPath : '';
 	var transactionAmount = adaWithToken;
 	var returnedToNftAddr = fee === 0 ? 0 : available - fee - transactionAmount;
 	var sendToBuyerAddr = fee === 0 ? 0 : transactionAmount;
 
-	exec(`cardano-cli transaction build-raw \
+	var command = `cardano-cli transaction build-raw \
 	--mary-era \
 	--fee ${fee} \
 	--tx-in ${utxo}#${ix} \
 	--tx-out ${nftAddress}+${returnedToNftAddr}\
 	--tx-out ${paymentAddress}+${sendToBuyerAddr}+"1 ${policy}.${nftIdentifier}"\
-	--out-file ${path}matx.raw`, (err, stdout, stderr) => {
+	--out-file ${path}matx.raw`;
+
+	console.log('Command: ' + command);
+
+	exec(command, (err, stdout, stderr) => {
 		if (err || stderr) {
 			console.log(`err: ${err}`);
 			console.log(`stderr: ${stderr}`);
 			res.status(500).jsonp(false);
   		} else {
 			console.log(`stdout: ${stdout}`);
-			console.log('GET /buildTx/' + req.params.fee + '/' + req.params.available);
 			res.status(200).jsonp(true);
 		}
 	});
 };
 
 exports.getFee = function(req, res) {
+	console.log('GET /fee');
 	var usePath = req.params.usePath;
 	var path = usePath ? testNFTPath : '';
 
-	exec(`cardano-cli transaction calculate-min-fee \
+	var command = `cardano-cli transaction calculate-min-fee \
 	--tx-body-file ${path}matx.raw \
 	--tx-in-count 1 \
 	--tx-out-count 1 \
 	--witness-count 2 \
 	--mainnet \
-	--protocol-params-file ${path}protocol.json`, (err, stdout, stderr) => {
+	--protocol-params-file ${path}protocol.json`;
+
+	console.log('Command: ' + command);
+
+	exec(command, (err, stdout, stderr) => {
 		if (err || stderr) {
 			console.log(`err: ${err}`);
 			console.log(`stderr: ${stderr}`);
 			res.status(500).jsonp(0);
   		} else {
 			console.log(`stdout: ${stdout}`);
-			console.log('GET /fee');
 			var arr = stdout.split(" ");
 			var fee = arr[0];		
 			res.status(200).jsonp(fee);
@@ -209,18 +218,21 @@ exports.signTx = function(req, res) {
 	var usePath = req.params.usePath;
 	var path = usePath ? testNFTPath : '';
 
-	exec(`cardano-cli transaction sign \
+	console.log('GET /signTx');		
+
+	var command = `cardano-cli transaction sign \
 	--signing-key-file ${path}payment.skey \
 	--mainnet \
 	--tx-body-file ${path}matx.raw \
-	--out-file ${path}matx.signed`, (err, stdout, stderr) => {
+	--out-file ${path}matx.signed`;
+
+	exec(command, (err, stdout, stderr) => {
 		if (err || stderr) {
 			console.log(`err: ${err}`);
 			console.log(`stderr: ${stderr}`);
 			res.status(500).jsonp(false);
   		} else {
 			console.log(`stdout: ${stdout}`);
-			console.log('GET /signTx');		
 			res.status(200).jsonp(true);
 		  }
 	});
@@ -230,14 +242,17 @@ exports.submitTx = function(req, res) {
 	var usePath = req.params.usePath;
 	var path = usePath ? testNFTPath : '';
 
-	exec(`cardano-cli transaction submit --tx-file  ${path}matx.signed --mainnet`, (err, stdout, stderr) => {
+	console.log('GET /submitTx');	
+
+	var command = `cardano-cli transaction submit --tx-file  ${path}matx.signed --mainnet`;
+
+	exec(command, (err, stdout, stderr) => {
 		if (err || stderr) {
 			console.log(`err: ${err}`);
 			console.log(`stderr: ${stderr}`);
 			res.status(500).jsonp(false);
   		} else {
 			console.log(`stdout: ${stdout}`);
-			console.log('GET /submitTx');	
 			res.status(200).jsonp(true);
 		  }
 	});
@@ -248,6 +263,8 @@ exports.createMetadataFile = function(req, res) {
 	var usePath = req.params.usePath;
 	var path = usePath ? testNFTPath : '';
 
+	console.log('GET /createMetadataFile');	
+
 	exec(`echo '${jsonstr}' > ${path}metadata.json`, (err, stdout, stderr) => {
 		if (err || stderr) {
 			console.log(`err: ${err}`);
@@ -255,7 +272,6 @@ exports.createMetadataFile = function(req, res) {
 			res.status(500).jsonp(false);
   		} else {
 			console.log(`stdout: ${stdout}`);
-			console.log('GET /createMetadataFile');	
 			res.status(200).jsonp(true);
 		  } 
 	});
