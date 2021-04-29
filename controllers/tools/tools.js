@@ -19,7 +19,7 @@ module.exports = {
             return undefined;
         }   
     },
-    ExecuteGetQueryinDB: function (query) {
+    ExecuteGetQueryinDB: async function (query) {
         var con = mysql.createConnection({
             host     : 'localhost',
             user     : 'nft',
@@ -29,7 +29,7 @@ module.exports = {
           
           con.connect(function(err) {
             if (err) throw err;
-            con.query(query, function (err, result, fields) {
+            await con.query(query, function (err, result, fields) {
               if (err) throw err;
               console.log(result);
               return result;

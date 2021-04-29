@@ -418,7 +418,10 @@ function getMintMetadata(policyId, publisher, nftIdentifier, name, imagePath, lo
 }
 
 function getProcessedTx() {
-    var result = tools.ExecuteGetQueryinDB('SELECT * FROM ProcessedTx');
-    console.log('PROCESSED RESULT');
-    console.log(result);
+    var result = tools.ExecuteGetQueryinDB('SELECT * FROM ProcessedTx').then(
+        (result) => {
+            console.log('PROCESSED RESULT');
+            console.log(result);
+        }
+    );
 }
