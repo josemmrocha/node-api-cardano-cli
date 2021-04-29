@@ -33,6 +33,7 @@ module.exports = {
           connection.query(query, function(err, rows, fields) {
             if (err) throw err;
             result = rows;
+            console.log(result);
           });
           
           connection.end();
