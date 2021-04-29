@@ -164,7 +164,7 @@ exports.sendMintedNotSentTokens = function(req, res) {
         if (err) throw err;
         console.log(`Found ${rows.length} minted not sent token.`);           
         if (rows && rows.length > 0) {
-            sendToken(address, mintedNotSentTokens[0].paymentAddress, policyIdTestNFT, true, mintedNotSentTokens[0].identifier, mintedNotSentTokens[0].txHash);
+            sendToken(address, rows[0].paymentAddress, policyIdTestNFT, true, rows[0].identifier, rows[0].txHash);
         }
     });
 };
@@ -548,7 +548,7 @@ function sendToken(nftAddress, paymentAddress, policy, usePath, nftIdentifier, t
                                                                             if (responseSubmitTx) {
                                                                                 console.log('SUCCESS Sending Tx');
                 
-                                                                                con.query(`UPDATE TestNft SET addressSent = '${paymentAddress}' WHERE identifier = '${nftIdentifier}';`, function (err, result) {
+                                                                                con.query(`UPDATE TestNft SET addressSent = true WHERE identifier = '${nftIdentifier}';`, function (err, result) {
                                                                                     if (err) throw err;
                                                                                     console.log(result.affectedRows + " record(s) updated (TestNft)");
                                                                                 });
