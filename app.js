@@ -29,7 +29,7 @@ commands.route('/utxos/:addr')
 commands.route('/policyId/:usePath')
   .get(CommandCtrl.getPolicyId);
 
-commands.route('/buildTxToMint/:fee/:available/:address/:policy/:utxo/:ix/:usePath/:nftIdentifier')
+commands.route('/buildTxMint/:fee/:available/:address/:policy/:utxo/:ix/:usePath/:nftIdentifier')
   .get(CommandCtrl.buildTxMint);
 
 commands.route('/buildTx/:fee/:available/:nftAddress/:paymentAddress/:policy/:utxo/:ix/:usePath')

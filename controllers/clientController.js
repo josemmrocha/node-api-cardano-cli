@@ -309,7 +309,6 @@ async function submitTx(usePath) {
 
 async function createmetadataFile(jsonstr, usePath) {
     var url = `http://localhost:4200/api/createMetadataFile/${jsonstr}/${usePath}`;
-    console.log('calling url: ' + url);
 
     try {
         let res = await axios.post(url, JSON.parse(jsonstr));
@@ -416,7 +415,7 @@ function selectTokenMintAndSend(available, addressForNft, paymentAddress, policy
 
         mintandSendToken(available, addressForNft, paymentAddress, policy, utxo, ix, usePath,
             randomNftFromNonProcessed.identifier, randomNftFromNonProcessed.name,
-            randomNftFromNonProcessed.imagePath, randomNftFromNonProcessed.location, txHash);
+            randomNftFromNonProcessed.image, randomNftFromNonProcessed.location, txHash);
     });
 }
 
