@@ -24,7 +24,8 @@ module.exports = {
         var connection = mysql.createConnection({
             host     : 'localhost',
             user     : 'nft',
-            password : 'nftpassword'
+            password : 'nftpassword',
+            database: 'nft'
           });
           
           connection.connect();
