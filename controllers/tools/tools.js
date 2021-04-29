@@ -20,8 +20,7 @@ module.exports = {
         }   
     },
     ExecuteGetQueryinDB: function (query) {
-        var result;
-        var connection = mysql.createConnection({
+        var con = mysql.createConnection({
             host     : 'localhost',
             user     : 'nft',
             password : 'nftpassword',
