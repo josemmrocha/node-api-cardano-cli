@@ -1,6 +1,7 @@
 const { exec } = require('child_process');
-const testNFTPath = "/home/anon/nft/test/";
-const adaWithToken = 1500000; // 10000000 = 10 ADA
+const constants = require('../constants');
+const testNFTPath = constants.testNFTPath;
+const adaWithToken = constants.adaWithToken;
 
 exports.getPolicyId = function(req, res) {
 	var usePath = req.params.usePath;

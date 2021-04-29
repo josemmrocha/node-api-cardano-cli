@@ -1,12 +1,14 @@
 const axios = require('axios');
 var mysql = require('mysql');
+const constants = require('../constants');
 const { response } = require('express');
 const { createMetadataFile } = require('./commandController');
 var tools = require('./tools/tools');
-const policyIdTestNFT = '79d04870cc49ea029f95e7ad19576981620b4665b921c95f79b2a726';
-const publisherName = 'test.com'; // adachess.com
-var minAvailableQtyInUtxo = 3000000; // 3000000 = 3 ADA
-var nftPrice = 2000000;
+
+const policyIdTestNFT = constants.policyIdTestNFT;
+const publisherName = constants.publisherName;
+var minAvailableQtyInUtxo = constants.minAvailableQtyInUtxo;
+var nftPrice = constants.nftPrice;
 
 var con = mysql.createConnection({
     host     : 'localhost',
