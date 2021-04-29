@@ -279,6 +279,7 @@ exports.createMetadataFile = function(req, res) {
 	var jsonstr = req.params.jsonstr;
 	var usePath = req.params.usePath;
 	var path = usePath ? testNFTPath : '';
+	console.log('Going to create metadata.json: ' + jsonstr);
 
 	exec(`echo '${jsonstr}' > ${path}metadata.json`, (err, stdout, stderr) => {
 		if (err) {

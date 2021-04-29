@@ -416,53 +416,55 @@ function mintandSendToken(available, addressForNft, paymentAddress, policy, utxo
 
     createmetadataFile(metadata, usePath).then(
         (createMetadataFileResponse) => {
-            buildTxMint(0, available, addressForNft, policy, utxo, ix, usePath, nftIdentifier).then(
-                (responseBuildRaw) => {
-                    if (responseBuildRaw) {
-                        getFee(usePath).then(
-                            (responseGetFee) => {
-                                if (responseGetFee && responseGetFee !== 0) {
-                                    buildTxMint(responseGetFee, available, addressForNft, policy, utxo, ix, usePath, nftIdentifier).then(
-                                        (responseBuildTx) => {
-                                            if (responseBuildTx) {
-                                                signTxMint(usePath).then(
-                                                    (responseSignTx) => {
-                                                        if (responseSignTx) {
-                                                            submitTx(usePath).then(
-                                                                (responseSubmitTx) => {
-                                                                    if (responseSubmitTx) {
-                                                                        console.log('SUCCESS Minting TOKEN');
-                                                                         sendToken(available, addressForNft, paymentAddress, policy, utxo, ix, usePath, nftIdentifier, txHash);
+            if (createMetadataFileResponse) {
+                buildTxMint(0, available, addressForNft, policy, utxo, ix, usePath, nftIdentifier).then(
+                    (responseBuildRaw) => {
+                        if (responseBuildRaw) {
+                            getFee(usePath).then(
+                                (responseGetFee) => {
+                                    if (responseGetFee && responseGetFee !== 0) {
+                                        buildTxMint(responseGetFee, available, addressForNft, policy, utxo, ix, usePath, nftIdentifier).then(
+                                            (responseBuildTx) => {
+                                                if (responseBuildTx) {
+                                                    signTxMint(usePath).then(
+                                                        (responseSignTx) => {
+                                                            if (responseSignTx) {
+                                                                submitTx(usePath).then(
+                                                                    (responseSubmitTx) => {
+                                                                        if (responseSubmitTx) {
+                                                                            console.log('SUCCESS Minting TOKEN');
+                                                                             sendToken(available, addressForNft, paymentAddress, policy, utxo, ix, usePath, nftIdentifier, txHash);
+                                                                        }
+                                                                    },
+                                                                    (errorSubmitTx) => {
+                                                                        console.log('Error Submitting Tx');
                                                                     }
-                                                                },
-                                                                (errorSubmitTx) => {
-                                                                    console.log('Error Submitting Tx');
-                                                                }
-                                                            );
+                                                                );
+                                                            }
+                                                        },
+                                                        (errorSignTx) => {
+                                                            console.log('Error Signing Fee');
                                                         }
-                                                    },
-                                                    (errorSignTx) => {
-                                                        console.log('Error Signing Fee');
-                                                    }
-                                                );
+                                                    );
+                                                }
+                                            },
+                                            (errorBuildTx) => {
+                                                console.log('Error Building Tx');
                                             }
-                                        },
-                                        (errorBuildTx) => {
-                                            console.log('Error Building Tx');
-                                        }
-                                    );
+                                        );
+                                    }
+                                },
+                                (errorGetFee) => {
+                                    console.log('Error Getting Fee');
                                 }
-                            },
-                            (errorGetFee) => {
-                                console.log('Error Getting Fee');
-                            }
-                        );
+                            );
+                        }
+                    },
+                    (errorBuildRaw) => {
+                        console.log('Error Building Raw');
                     }
-                },
-                (errorBuildRaw) => {
-                    console.log('Error Building Raw');
-                }
-            );
+                );
+            }
         },
         (createMetadataFileError) => {
             console.log('Error creating metadata file');
