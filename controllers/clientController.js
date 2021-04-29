@@ -1,6 +1,6 @@
 const axios = require('axios');
 var mysql = require('mysql');
-const constants = require('../constants');
+const constants = require('./constants/constants');
 const { response } = require('express');
 const { createMetadataFile } = require('./commandController');
 var tools = require('./tools/tools');

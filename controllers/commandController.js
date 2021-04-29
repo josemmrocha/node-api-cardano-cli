@@ -1,5 +1,5 @@
 const { exec } = require('child_process');
-const constants = require('../constants');
+const constants = require('./constants/constants');
 const testNFTPath = constants.testNFTPath;
 const adaWithToken = constants.adaWithToken;
 
