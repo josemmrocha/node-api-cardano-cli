@@ -143,7 +143,7 @@ exports.buildTxWithToken = function(req, res) {
 	--fee ${fee} \
 	--tx-in ${utxo}#${ix} \
 	--tx-out ${nftAddress}+${returnedToNftAddr}\
-	--tx-out ${paymentAddress}+${sendToBuyerAddr}+"1 ${policy}.${nftIdentifier}"\\
+	--tx-out ${paymentAddress}+${sendToBuyerAddr}+"1 ${policy}.${nftIdentifier}"\
 	--out-file ${path}matx.raw`, (err, stdout, stderr) => {
 		if (err || stderr) {
 			console.log(`err: ${err}`);
