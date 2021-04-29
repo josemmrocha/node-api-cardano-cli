@@ -93,10 +93,20 @@ exports.scanAddrTxAndSend = function(req, res) {
 };
 
 exports.getProcessedTx = function(req, res) {
-    con.query('SELECT * FROM ProcessedTx', function (err, rows, fields) {
+    con.query('SELECT * FROM ProcessedTx;', function (err, rows, fields) {
         if (err) throw err;
         console.log('PROCESSED RESULT');
         console.log(rows);
+    });
+
+    con.query('SELECT * FROM TestNft;', function (err, rows, fields) {
+        if (err) throw err;
+        console.log('TestNft RESULT');
+        console.log(rows);
+        var nonProcessedNfts = rows.filter(x => x.minted !== true);
+        var randomNftFromNonProcessed = nonProcessedNfts[Math.floor(Math.random() * nonProcessedNfts.length)];
+        console.log('Random TestNft');
+        console.log(randomNftFromNonProcessed.name);
     });
 
     res.status(200).send('running');
