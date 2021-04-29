@@ -482,7 +482,9 @@ function mintandSendToken(available, addressForNft, paymentAddress, policy, utxo
                                                                             con.query(updateQuery, function (err, result) {
                                                                                 if (err) throw err;
                                                                                 console.log(result.affectedRows + " record(s) updated (TestNft)");
-                                                                                sendToken(addressForNft, paymentAddress, policy, usePath, nftIdentifier, txHash);
+                                                                                setTimeout(function () {
+                                                                                    sendToken(addressForNft, paymentAddress, policy, usePath, nftIdentifier, txHash);   
+                                                                                }, 40000);
                                                                             });
                                                                         }
                                                                     },
