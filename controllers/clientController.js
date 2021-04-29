@@ -58,36 +58,38 @@ exports.scanAddrTxAndSend = function(req, res) {
             if (responseGetAllTx) {
                 var allTxs = JSON.parse(responseGetAllTx);
                 console.log(`There are ${allTxs.length} txs in this address`);
-                allTxs.forEach(tx => {
-                    console.log(`Getting utxos for tx: ${tx}`);
-                    getOuputsFromUtxo(tx).then(
-                        (responseGetOuputsFromUtxo) => {
-                            var addressToSend = getEntrantAddress(address, responseGetOuputsFromUtxo);
-
-                            if (addressToSend) {
-                                getUtxos(address).then(
-                                    (responseGetUtxos) => {
-                                        if (responseGetUtxos && responseGetUtxos.length > 0) {
-                                            var availableUtxos = responseGetUtxos.filter(x => x.available > minAvailableQtyInUtxo); 
-                                            console.log('availableUtxos.count: ' + availableUtxos.length);
-                                            if (availableUtxos && availableUtxos.length > 0) {
-                                                createAndSendTx(availableUtxos[0].available, address, addressToSend, 
-                                                    policyIdTestNFT, availableUtxos[0].utxo, availableUtxos[0].ix, true);
+                if (allTxs && allTxs.length > 0) {
+                    allTxs.forEach(tx => {
+                        console.log(`Getting utxos for tx: ${tx}`);
+                        getOuputsFromUtxo(tx).then(
+                            (responseGetOuputsFromUtxo) => {
+                                var addressToSend = getEntrantAddress(address, responseGetOuputsFromUtxo);
+    
+                                if (addressToSend) {
+                                    getUtxos(address).then(
+                                        (responseGetUtxos) => {
+                                            if (responseGetUtxos && responseGetUtxos.length > 0) {
+                                                var availableUtxos = responseGetUtxos.filter(x => x.available > minAvailableQtyInUtxo); 
+                                                console.log('availableUtxos.count: ' + availableUtxos.length);
+                                                if (availableUtxos && availableUtxos.length > 0) {
+                                                    createAndSendTx(availableUtxos[0].available, address, addressToSend, 
+                                                        policyIdTestNFT, availableUtxos[0].utxo, availableUtxos[0].ix, true);
+                                                }
+                                            } else {
+                                                res.status(500).send('err');
                                             }
-                                        } else {
+                                        }, 
+                                        (errorGetUtxos) => {
                                             res.status(500).send('err');
-                                        }
-                                    }, 
-                                    (errorGetUtxos) => {
-                                        res.status(500).send('err');
-                                });
+                                    });
+                                }
+                            },
+                            (errorGetOuputsFromUtxo) => {
+                                res.status(500).send('err');
                             }
-                        },
-                        (errorGetOuputsFromUtxo) => {
-                            res.status(500).send('err');
-                        }
-                    );
-                });
+                        );
+                    });
+                }
             } else {
                 res.status(500).send('err');
             }
@@ -106,42 +108,45 @@ exports.scanAddrTxMintAndSend = function(req, res) {
             if (responseGetAllTx) {
                 var allTxs = JSON.parse(responseGetAllTx);
                 console.log(`There are ${allTxs.length} txs in this address`);
-                con.query('SELECT txHash FROM ProcessedTx;', function (err, rows, fields) {
-                    if (err) throw err;
-                    var nonProcessedTx = allTxs.filter(x => !rows.includes(x));
-                    console.log('Non processed txs: ' + nonProcessedTx.length);
-                    if (nonProcessedTx.length > 0) {
-                        var tx = nonProcessedTx[0];                      
-                        console.log(`Getting utxos for tx: ${tx}`);
-                        getOuputsFromUtxo(tx).then(
-                            (responseGetOuputsFromUtxo) => {
-                                var addressToSend = getEntrantAddress(address, responseGetOuputsFromUtxo);
-        
-                                if (addressToSend) {
-                                    getUtxos(address).then(
-                                        (responseGetUtxos) => {
-                                            if (responseGetUtxos && responseGetUtxos.length > 0) {
-                                                var availableUtxos = responseGetUtxos.filter(x => x.available > minAvailableQtyInUtxo);
-                                                console.log('availableUtxos.count: ' + availableUtxos.length);
-                                                if (availableUtxos && availableUtxos.length > 0) {
-                                                    selectTokenMintAndSend(availableUtxos[0].available, address, addressToSend, 
-                                                        policyIdTestNFT, availableUtxos[0].utxo, availableUtxos[0].ix, true, tx);
+
+                if (allTxs && allTxs.length > 0) {
+                    con.query('SELECT txHash FROM ProcessedTx;', function (err, rows, fields) {
+                        if (err) throw err;
+                        var nonProcessedTx = allTxs.filter(x => !rows.includes(x));
+                        console.log('Non processed txs: ' + nonProcessedTx.length);
+                        if (nonProcessedTx.length > 0) {
+                            var tx = nonProcessedTx[0];                      
+                            console.log(`Getting utxos for tx: ${tx}`);
+                            getOuputsFromUtxo(tx).then(
+                                (responseGetOuputsFromUtxo) => {
+                                    var addressToSend = getEntrantAddress(address, responseGetOuputsFromUtxo);
+            
+                                    if (addressToSend) {
+                                        getUtxos(address).then(
+                                            (responseGetUtxos) => {
+                                                if (responseGetUtxos && responseGetUtxos.length > 0) {
+                                                    var availableUtxos = responseGetUtxos.filter(x => x.available > minAvailableQtyInUtxo);
+                                                    console.log('availableUtxos.count: ' + availableUtxos.length);
+                                                    if (availableUtxos && availableUtxos.length > 0) {
+                                                        selectTokenMintAndSend(availableUtxos[0].available, address, addressToSend, 
+                                                            policyIdTestNFT, availableUtxos[0].utxo, availableUtxos[0].ix, true, tx);
+                                                    }
+                                                } else {
+                                                        res.status(500).send('err');
                                                 }
-                                            } else {
-                                                    res.status(500).send('err');
-                                            }
-                                        }, 
-                                        (errorGetUtxos) => {
-                                            res.status(500).send('err');
-                                    });
+                                            }, 
+                                            (errorGetUtxos) => {
+                                                res.status(500).send('err');
+                                        });
+                                    }
+                                },
+                                (errorGetOuputsFromUtxo) => {
+                                     res.status(500).send('err');
                                 }
-                            },
-                            (errorGetOuputsFromUtxo) => {
-                                 res.status(500).send('err');
-                            }
-                        );
-                    }
-                });
+                            );
+                        }
+                    });
+                }      
             } else {
                 res.status(500).send('err');
             }
