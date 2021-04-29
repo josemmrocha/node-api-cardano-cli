@@ -304,6 +304,7 @@ async function createmetadataFile(jsonstr, usePath) {
         let res = await axios.get(url);
         return res.data;
     } catch (error) {
+        console.log('Error in create metadata file call: ' + error)
         return undefined;
     }   
 }
