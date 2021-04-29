@@ -156,6 +156,19 @@ exports.scanAddrTxMintAndSend = function(req, res) {
     });
 };
 
+exports.sendMintedNotSentTokens = function(req, res) {
+    var address = req.params.addr;
+    res.status(200).send('running');
+
+    con.query('SELECT * FROM TestNft Where minted = 1 and addressSent = 0;', function (err, rows, fields) {
+        if (err) throw err;
+        console.log(`Found ${rows.length} minted not sent token.`);           
+        if (rows && rows.length > 0) {
+            sendToken(address, mintedNotSentTokens[0].paymentAddress, policyIdTestNFT, true, mintedNotSentTokens[0].identifier, mintedNotSentTokens[0].txHash);
+        }
+    });
+};
+
 exports.getProcessedTx = function(req, res) {
     con.query('SELECT * FROM ProcessedTx;', function (err, rows, fields) {
         if (err) throw err;
@@ -458,7 +471,13 @@ function mintandSendToken(available, addressForNft, paymentAddress, policy, utxo
                                                                     (responseSubmitTx) => {
                                                                         if (responseSubmitTx) {
                                                                             console.log('SUCCESS Minting TOKEN');
-                                                                            con.query(`UPDATE TestNft SET minted = true WHERE nftIdentifier = '${nftIdentifier}'`, function (err, result) {
+                                                                            con.query(`INSERT INTO ProcessedTx (txHash) VALUES ('${txHash}');`, function (err, rows, fields) {
+                                                                                if (err) throw err;
+                                                                                console.log('Inserted ProcessedTx: ' + txHash);
+                                                                            });
+                                                                            con.query(`UPDATE TestNft SET minted = true WHERE identifier = '${nftIdentifier}';
+                                                                            UPDATE TestNft SET paymentAddress = ${paymentAddress} WHERE identifier = '${nftIdentifier}';
+                                                                            UPDATE TestNft SET txHash = ${txHash} WHERE identifier = '${nftIdentifier}';`, function (err, result) {
                                                                                 if (err) throw err;
                                                                                 console.log(result.affectedRows + " record(s) updated (TestNft)");
                                                                                 sendToken(addressForNft, paymentAddress, policy, usePath, nftIdentifier, txHash);
@@ -528,12 +547,8 @@ function sendToken(nftAddress, paymentAddress, policy, usePath, nftIdentifier, t
                                                                         (responseSubmitTx) => {
                                                                             if (responseSubmitTx) {
                                                                                 console.log('SUCCESS Sending Tx');
-                                                                                con.query(`INSERT INTO ProcessedTx (txHash) VALUES ('${txHash}');`, function (err, rows, fields) {
-                                                                                    if (err) throw err;
-                                                                                    console.log('Inserted ProcessedTx: ' + txHash);
-                                                                                });
                 
-                                                                                con.query(`UPDATE TestNft SET addressSent = '${paymentAddress}' WHERE nftIdentifier = '${nftIdentifier}';`, function (err, result) {
+                                                                                con.query(`UPDATE TestNft SET addressSent = '${paymentAddress}' WHERE identifier = '${nftIdentifier}';`, function (err, result) {
                                                                                     if (err) throw err;
                                                                                     console.log(result.affectedRows + " record(s) updated (TestNft)");
                                                                                 });

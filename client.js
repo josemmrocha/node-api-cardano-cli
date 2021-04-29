@@ -34,6 +34,9 @@ commands.route('/getProcessedTx/')
 commands.route('/scanAddrTxMintAndSend/:addr')
   .get(ClientCtrl.scanAddrTxMintAndSend);
 
+commands.route('/sendMintedNotSentTokens/:addr')
+  .get(ClientCtrl.sendMintedNotSentTokens);
+
 app.use('/api', commands);
 
 app.listen(4800, function() {
