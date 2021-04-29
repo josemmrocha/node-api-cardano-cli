@@ -144,7 +144,6 @@ exports.buildTxWithToken = function(req, res) {
 	--mary-era \
 	--fee ${fee} \
 	--tx-in ${utxo}#${ix} \
-	--tx-out ${nftAddress}+${returnedToNftAddr} \
 	--tx-out ${paymentAddress}+${sendToBuyerAddr}+"1 ${policy}.${nftIdentifier}" \
 	--out-file ${path}matx.raw`;
 
