@@ -27,15 +27,13 @@ module.exports = {
             database: 'nft'
         });
           
-        connection.connect();
-
-        await connection.query(query, function(err, rows, fields) {
+        con.connect(function(err) {
             if (err) throw err;
-            console.log('The solution is: ', rows);
-            return rows;
-        });
-
-connection.end();
+            con.query(query, function (err, result) {
+              if (err) throw err;
+              console.log("Result: " + result);
+            });
+          });
     },
     ExecuteInsertQueryinDB: function (query) {
         var result;

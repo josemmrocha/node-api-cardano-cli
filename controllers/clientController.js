@@ -4,6 +4,12 @@ const { createMetadataFile } = require('./commandController');
 var tools = require('./tools/tools');
 const policyIdTestNFT = '79d04870cc49ea029f95e7ad19576981620b4665b921c95f79b2a726';
 const publisherName = 'test.com'; // adachess.com
+var con = mysql.createConnection({
+    host     : 'localhost',
+    user     : 'nft',
+    password : 'nftpassword',
+    database: 'nft'
+});
 
 exports.scanAndSend = function(req, res) {
     var address = req.params.addr;
@@ -85,16 +91,16 @@ exports.scanAddrTxAndSend = function(req, res) {
     });
 };
 
-exports.getProcessedTx = function(req, res) {
-    getProcessedTxAsync().then(
-        response => {
-            console.log('PROCESSED RESULT');
-            console.log(result);
-        },
-        error => {
+exports.getProcessedTx = function(req, res) {  
+    con.connect(function(err) {
+        if (err) throw err;
+        con.query(query, function (err, result) {
+          if (err) throw err;
+          console.log('PROCESSED RESULT');
+          console.log(result);
+        });
+      });
 
-        }
-    );
     res.status(200).send('running');
 }
 
@@ -214,15 +220,6 @@ async function createmetadataFile(jsonstr, usePath) {
     try {
         let res = await axios.get(url);
         return res.data;
-    } catch (error) {
-        return undefined;
-    }   
-}
-
-async function getProcessedTxAsync() {
-    try {
-        let res = await tools.ExecuteGetQueryinDB();
-        return res;
     } catch (error) {
         return undefined;
     }   
@@ -433,13 +430,4 @@ function sendToken(available, nftAddress, paymentAddress, policy, utxo, ix, useP
 function getMintMetadata(policyId, publisher, nftIdentifier, name, imagePath, location) {
     var str = `{"721":{${policyId}:{"publisher":${publisher},${nftIdentifier}:{"name":${name},"image":${imagePath},"location":${location}}}}}`;
     return str;
-}
-
-function getProcessedTx() {
-    var result = tools.ExecuteGetQueryinDB('SELECT * FROM ProcessedTx').then(
-        (result) => {
-            console.log('PROCESSED RESULT');
-            console.log(result);
-        }
-    );
 }
