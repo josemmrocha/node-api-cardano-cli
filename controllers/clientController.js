@@ -93,11 +93,10 @@ exports.scanAddrTxAndSend = function(req, res) {
 };
 
 exports.getProcessedTx = function(req, res) {
-    if (err) throw err;
     con.query('SELECT * FROM ProcessedTx', function (err, rows, fields) {
         if (err) throw err;
         console.log('PROCESSED RESULT');
-        console.log(result);
+        console.log(rows);
     });
 
     res.status(200).send('running');
