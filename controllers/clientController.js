@@ -54,8 +54,8 @@ exports.scanAddrTxAndSend = function(req, res) {
                                     (responseGetUtxos) => {
                                         if (responseGetUtxos && responseGetUtxos.length > 0) {
                                             var availableUtxos = responseGetUtxos.filter(x => x.available > 3000000); // 10000000 = 10 ADA
-                                            console.log('availableUtxos: ' + JSON.stringify(availableUtxos));
-                                            if (availableUtxos && availableUtxos.lenght > 0) {
+                                            console.log('availableUtxos.count: ' + availableUtxos.length);
+                                            if (availableUtxos && availableUtxos.length > 0) {
                                                 createAndSendTx(availableUtxos[0].available, address, addressToSend, 
                                                     policyIdTestNFT, availableUtxos[0].utxo, availableUtxos[0].ix, true);
                                             }
@@ -168,7 +168,6 @@ function getEntrantAddress(myAddr, responseGetOuputsFromUtxos) {
         responseGetOuputsFromUtxo.outputs.forEach(output => {
             if (output.address === myAddr) { // 10000000 = 10 ADA
                 output.amount.forEach(element => {
-                    console.log('Addr: ' + output.address + '. Qty: ' + element.quantity);
                     if (element.quantity >= 2000000 && element.unit === 'lovelace') {
                         entrantTx = true;
                     }
@@ -181,12 +180,12 @@ function getEntrantAddress(myAddr, responseGetOuputsFromUtxos) {
                 if (output.address !== myAddr && !sentAdaToAddr) {
                     output.amount.forEach(element => {
                         if (element.quantity >= 2000000 && element.unit === 'lovelace' && !sentAdaToAddr) {
+                            console.log('Addr: ' + output.address + '. Qty: ' + element.quantity);
                             sentAdaToAddr = output.address;
                         }
                     });
                 } 
             });
-            console.log(`Send ADA to addr: ${sentAdaToAddr}`);
             addressToSend = sentAdaToAddr;
         }
     }
