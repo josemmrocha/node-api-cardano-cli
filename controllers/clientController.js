@@ -458,7 +458,11 @@ function mintandSendToken(available, addressForNft, paymentAddress, policy, utxo
                                                                     (responseSubmitTx) => {
                                                                         if (responseSubmitTx) {
                                                                             console.log('SUCCESS Minting TOKEN');
-                                                                             sendToken(addressForNft, paymentAddress, policy, usePath, nftIdentifier, txHash);
+                                                                            con.query(`UPDATE TestNft SET minted = true WHERE nftIdentifier = '${nftIdentifier}'`, function (err, result) {
+                                                                                if (err) throw err;
+                                                                                console.log(result.affectedRows + " record(s) updated (TestNft)");
+                                                                                sendToken(addressForNft, paymentAddress, policy, usePath, nftIdentifier, txHash);
+                                                                            });
                                                                         }
                                                                     },
                                                                     (errorSubmitTx) => {
@@ -498,7 +502,6 @@ function mintandSendToken(available, addressForNft, paymentAddress, policy, utxo
 }
 
 function sendToken(nftAddress, paymentAddress, policy, usePath, nftIdentifier, txHash) {
-    console.log(`Going to send token. NftAddress: ${nftAddress}. PaymentAddress: ${paymentAddress}. Available: ${available}. Policy: ${policy}.  Utxo: ${utxo}.  ix: ${ix}. UsePath: ${usePath}. NftIdentifier: ${nftIdentifier}`);
     getUtxos(address).then(
         (responseGetUtxos) => {
             if (responseGetUtxos && responseGetUtxos.length > 0) {
@@ -507,7 +510,8 @@ function sendToken(nftAddress, paymentAddress, policy, usePath, nftIdentifier, t
                 if (availableUtxos && availableUtxos.length > 0) {
                     var available = availableUtxos[0].available;
                     var ix = availableUtxos[0].ix;
-                    var utxo = availableUtxos[0].utxo;               
+                    var utxo = availableUtxos[0].utxo;
+                    console.log(`Going to send token. NftAddress: ${nftAddress}. PaymentAddress: ${paymentAddress}. Available: ${available}. Policy: ${policy}.  Utxo: ${utxo}.  ix: ${ix}. UsePath: ${usePath}. NftIdentifier: ${nftIdentifier}`);             
                     buildTxWithToken(0, available, nftAddress, paymentAddress, policy, utxo, ix, usePath, nftIdentifier).then(
                         (responseBuildRaw) => {
                             if (responseBuildRaw) {
@@ -529,8 +533,7 @@ function sendToken(nftAddress, paymentAddress, policy, usePath, nftIdentifier, t
                                                                                     console.log('Inserted ProcessedTx: ' + txHash);
                                                                                 });
                 
-                                                                                con.query(`UPDATE TestNft SET minted = true WHERE nftIdentifier = '${nftIdentifier}';
-                                                                                UPDATE TestNft SET addressSent = '${paymentAddress}' WHERE nftIdentifier = '${nftIdentifier}';`, function (err, result) {
+                                                                                con.query(`UPDATE TestNft SET addressSent = '${paymentAddress}' WHERE nftIdentifier = '${nftIdentifier}';`, function (err, result) {
                                                                                     if (err) throw err;
                                                                                     console.log(result.affectedRows + " record(s) updated (TestNft)");
                                                                                 });
