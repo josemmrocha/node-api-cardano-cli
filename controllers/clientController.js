@@ -310,9 +310,9 @@ async function submitTx(usePath) {
 async function createmetadataFile(jsonstr, usePath) {
     var url = `http://localhost:4200/api/createMetadataFile/${jsonstr}/${usePath}`;
     console.log('calling url: ' + url);
-    
+
     try {
-        let res = await axios.get(url);
+        let res = await axios.post(url, JSON.parse(jsonstr));
         return res.data;
     } catch (error) {
         console.log('Error in createmetadataFile call: ' + error);

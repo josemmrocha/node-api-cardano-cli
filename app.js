@@ -50,8 +50,8 @@ commands.route('/signTxMint/:usePath')
 commands.route('/submitTx/:usePath')
   .get(CommandCtrl.submitTx);
 
-commands.route('/createMetadataFile/:jsonstr/:usePath')
-  .get(CommandCtrl.createMetadataFile);
+commands.route('/createMetadataFile/:usePath')
+  .post(CommandCtrl.createMetadataFile);
 
 commands.route('/txUtxos/:txHash')
   .get(ApiCtrl.getTxUtxos);

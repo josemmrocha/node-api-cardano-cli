@@ -276,7 +276,7 @@ exports.submitTx = function(req, res) {
 };
 
 exports.createMetadataFile = function(req, res) {
-	var jsonstr = req.params.jsonstr;
+	var jsonstr = JSON.stringify(req.body);
 	var usePath = req.params.usePath;
 	var path = usePath ? testNFTPath : '';
 	console.log('Going to create metadata.json: ' + jsonstr);
