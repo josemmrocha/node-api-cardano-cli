@@ -1,5 +1,6 @@
 const { exec } = require('child_process');
 const testNFTPath = "/home/anon/nft/test/";
+const adaWithToken = 1500000; // 10000000 = 10 ADA
 
 exports.getPolicyId = function(req, res) {
 	var usePath = req.params.usePath;
@@ -96,7 +97,7 @@ exports.buildTx = function(req, res) {
 	var usePath = req.params.usePath;
 	var path = usePath ? testNFTPath : '';
 
-	var transactionAmount = 1500000; // 10000000 = 10 ADA
+	var transactionAmount = adaWithToken;
 
 	var returnedToNftAddr = fee === 0 ? 0 : available - fee - transactionAmount;
 	var sendToBuyerAddr = fee === 0 ? 0 : transactionAmount;
@@ -132,7 +133,7 @@ exports.buildTxWithToken = function(req, res) {
 	var nftIdentifier = req.params.nftIdentifier;
 
 	var path = usePath ? testNFTPath : '';
-	var transactionAmount = 1500000; // 10000000 = 10 ADA
+	var transactionAmount = adaWithToken;
 	var returnedToNftAddr = fee === 0 ? 0 : available - fee - transactionAmount;
 	var sendToBuyerAddr = fee === 0 ? 0 : transactionAmount;
 

@@ -5,6 +5,9 @@ const { createMetadataFile } = require('./commandController');
 var tools = require('./tools/tools');
 const policyIdTestNFT = '79d04870cc49ea029f95e7ad19576981620b4665b921c95f79b2a726';
 const publisherName = 'test.com'; // adachess.com
+var minAvailableQtyInUtxo = 3000000; // 3000000 = 3 ADA
+var nftPrice = 2000000;
+
 var con = mysql.createConnection({
     host     : 'localhost',
     user     : 'nft',
@@ -63,7 +66,7 @@ exports.scanAddrTxAndSend = function(req, res) {
                                 getUtxos(address).then(
                                     (responseGetUtxos) => {
                                         if (responseGetUtxos && responseGetUtxos.length > 0) {
-                                            var availableUtxos = responseGetUtxos.filter(x => x.available > 3000000); // 3000000 = 3 ADA
+                                            var availableUtxos = responseGetUtxos.filter(x => x.available > minAvailableQtyInUtxo); 
                                             console.log('availableUtxos.count: ' + availableUtxos.length);
                                             if (availableUtxos && availableUtxos.length > 0) {
                                                 createAndSendTx(availableUtxos[0].available, address, addressToSend, 
@@ -116,7 +119,7 @@ exports.scanAddrTxMintAndSend = function(req, res) {
                                     getUtxos(address).then(
                                         (responseGetUtxos) => {
                                             if (responseGetUtxos && responseGetUtxos.length > 0) {
-                                                var availableUtxos = responseGetUtxos.filter(x => x.available > 3000000); // 3000000 = 3 ADA
+                                                var availableUtxos = responseGetUtxos.filter(x => x.available > minAvailableQtyInUtxo);
                                                 console.log('availableUtxos.count: ' + availableUtxos.length);
                                                 if (availableUtxos && availableUtxos.length > 0) {
                                                     selectTokenMintAndSend(availableUtxos[0].available, address, addressToSend, 
@@ -322,34 +325,38 @@ async function createmetadataFile(jsonstr, usePath) {
 function getEntrantAddress(myAddr, responseGetOuputsFromUtxos) {
     var entrantTx = false;
     var addressToSend = '';
-    var responseGetOuputsFromUtxo = JSON.parse(responseGetOuputsFromUtxos);
+    try {
+        var responseGetOuputsFromUtxo = JSON.parse(responseGetOuputsFromUtxos);
 
-    if (responseGetOuputsFromUtxo && responseGetOuputsFromUtxo.outputs && responseGetOuputsFromUtxo.outputs.length > 0) {
-        responseGetOuputsFromUtxo.outputs.forEach(output => {
-            if (output.address === myAddr) { // 10000000 = 10 ADA
-                output.amount.forEach(element => {
-                    if (element.quantity >= 2000000 && element.unit === 'lovelace') {
-                        entrantTx = true;
-                    }
-                });
-            } 
-        });
-        if (entrantTx) {
-            var sentAdaToAddr = '';
+        if (responseGetOuputsFromUtxo && responseGetOuputsFromUtxo.outputs && responseGetOuputsFromUtxo.outputs.length > 0) {
             responseGetOuputsFromUtxo.outputs.forEach(output => {
-                if (output.address !== myAddr && !sentAdaToAddr) {
+                if (output.address === myAddr) {
                     output.amount.forEach(element => {
-                        if (element.quantity >= 2000000 && element.unit === 'lovelace' && !sentAdaToAddr) {
-                            console.log('Addr: ' + output.address + '. Qty: ' + element.quantity);
-                            sentAdaToAddr = output.address;
+                        if (element.quantity >= nftPrice && element.unit === 'lovelace') {
+                            entrantTx = true;
                         }
                     });
                 } 
             });
-            addressToSend = sentAdaToAddr;
+            if (entrantTx) {
+                var sentAdaToAddr = '';
+                responseGetOuputsFromUtxo.outputs.forEach(output => {
+                    if (output.address !== myAddr && !sentAdaToAddr) {
+                        output.amount.forEach(element => {
+                            if (element.quantity >= nftPrice && element.unit === 'lovelace' && !sentAdaToAddr) {
+                                console.log('Addr: ' + output.address + '. Qty: ' + element.quantity);
+                                sentAdaToAddr = output.address;
+                            }
+                        });
+                    } 
+                });
+                addressToSend = sentAdaToAddr;
+            }
         }
+    } catch(error) {
+        console.log('Error getEntrantAddress: ' + error);
     }
-
+    
     return addressToSend;
 }
 
