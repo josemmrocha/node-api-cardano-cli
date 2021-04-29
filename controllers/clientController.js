@@ -403,17 +403,16 @@ function selectTokenMintAndSend(available, addressForNft, paymentAddress, policy
         console.log('Random TestNft Selected. Identifier: ' + randomNftFromNonProcessed.identifier);
 
         mintandSendToken(available, addressForNft, paymentAddress, policy, utxo, ix, usePath,
-            randomNftFromNonProcessed.nftIdentifier, randomNftFromNonProcessed.name,
+            randomNftFromNonProcessed.identifier, randomNftFromNonProcessed.name,
             randomNftFromNonProcessed.imagePath, randomNftFromNonProcessed.location, txHash);
     });
 }
 
 function mintandSendToken(available, addressForNft, paymentAddress, policy, utxo, ix, usePath, nftIdentifier, name, imagePath, location, txHash) {
-    console.log(`Going to mint token. Address: ${addressForNft}. Available: ${available}.  
-        Policy: ${policy}.  Utxo: ${utxo}.  ix: ${ix}. 
-        UsePath: ${usePath}. NftIdentifier: ${nftIdentifier}.`);
+    console.log(`Going to mint token. Address: ${addressForNft}. Available: ${available}. Policy: ${policy}.  Utxo: ${utxo}.  ix: ${ix}. UsePath: ${usePath}. NftIdentifier: ${nftIdentifier}.`);
 
     var metadata = getMintMetadata(policy, publisherName, nftIdentifier, name, imagePath, location);
+    console.log('Metadata: ' + metadata);
 
     createmetadataFile(metadata, usePath).then(
         (createMetadataFileResponse) => {
