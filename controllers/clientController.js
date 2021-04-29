@@ -127,6 +127,7 @@ exports.scanAddrTxMintAndSend = function(req, res) {
                                                 if (responseGetUtxos && responseGetUtxos.length > 0) {
                                                     var availableUtxos = responseGetUtxos.filter(x => x.available > minAvailableQtyInUtxo);
                                                     console.log('availableUtxos.count: ' + availableUtxos.length);
+                                                    // TODO aqui coger no la primera, sino la que de verdad tiene el token.
                                                     if (availableUtxos && availableUtxos.length > 0) {
                                                         selectTokenMintAndSend(availableUtxos[0].available, address, addressToSend, 
                                                             policyIdTestNFT, availableUtxos[0].utxo, availableUtxos[0].ix, true, tx);
@@ -476,9 +477,9 @@ function mintandSendToken(available, addressForNft, paymentAddress, policy, utxo
                                                                                 if (err) throw err;
                                                                                 console.log('Inserted ProcessedTx: ' + txHash);
                                                                             });
-                                                                            con.query(`UPDATE TestNft SET minted = true WHERE identifier = '${nftIdentifier}';
-                                                                            UPDATE TestNft SET paymentAddress = '${paymentAddress}' WHERE identifier = '${nftIdentifier}';
-                                                                            UPDATE TestNft SET txHash = '${txHash}' WHERE identifier = '${nftIdentifier}';`, function (err, result) {
+                                                                            const updateQuery = `UPDATE TestNft SET minted = true, paymentAddress = '${paymentAddress}', txHash = '${txHash}' WHERE identifier = '${nftIdentifier}';`;
+                                                                            console.log('Update query' + updateQuery);
+                                                                            con.query(updateQuery, function (err, result) {
                                                                                 if (err) throw err;
                                                                                 console.log(result.affectedRows + " record(s) updated (TestNft)");
                                                                                 sendToken(addressForNft, paymentAddress, policy, usePath, nftIdentifier, txHash);
