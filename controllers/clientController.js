@@ -534,6 +534,6 @@ function sendToken(available, nftAddress, paymentAddress, policy, utxo, ix, useP
 }
 
 function getMintMetadata(policyId, publisher, nftIdentifier, name, imagePath, location) {
-    var str = `{"721":{${policyId}:{"publisher":${publisher},${nftIdentifier}:{"name":${name},"image":${imagePath},"location":${location}}}}}`;
+    var str = `{"721":{"${policyId}":{"publisher":"${publisher}","${nftIdentifier}":{"name":"${name}","image":"${imagePath}","location":"${location}"}}}}`;
     return str;
 }
