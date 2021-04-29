@@ -226,6 +226,8 @@ exports.signTx = function(req, res) {
 	--tx-body-file ${path}matx.raw \
 	--out-file ${path}matx.signed`;
 
+	console.log('Command: ' + command);
+
 	exec(command, (err, stdout, stderr) => {
 		if (err || stderr) {
 			console.log(`err: ${err}`);
@@ -245,6 +247,8 @@ exports.submitTx = function(req, res) {
 	console.log('GET /submitTx');	
 
 	var command = `cardano-cli transaction submit --tx-file  ${path}matx.signed --mainnet`;
+
+	console.log('Command: ' + command);
 
 	exec(command, (err, stdout, stderr) => {
 		if (err || stderr) {
