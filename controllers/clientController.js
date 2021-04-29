@@ -99,6 +99,12 @@ exports.getProcessedTx = function(req, res) {
         console.log(rows);
     });
 
+    var txHash = 'test';
+    con.query(`INSERT INTO ProcessedTx (txHash) VALUES ('${txHash}');`, function (err, rows, fields) {
+        if (err) throw err;
+        console.log('Inserted ProcessedTx: ' + txHash);
+    });
+
     con.query('SELECT * FROM TestNft;', function (err, rows, fields) {
         if (err) throw err;
         console.log('TestNft RESULT');
@@ -107,6 +113,19 @@ exports.getProcessedTx = function(req, res) {
         var randomNftFromNonProcessed = nonProcessedNfts[Math.floor(Math.random() * nonProcessedNfts.length)];
         console.log('Random TestNft');
         console.log(randomNftFromNonProcessed.name);
+    });
+
+    var nftName = 'NFTest01';
+    con.query(`UPDATE TestNft SET minted = true WHERE name = '${nftName}';`, function (err, result) {
+        if (err) throw err;
+        console.log(result.affectedRows + " record(s) updated");
+    });
+
+    var nftName = 'NFTest01';
+    var addressSent = 'afadf';
+    con.query(`UPDATE TestNft SET addressSent = ${addressSent} WHERE name = '${nftName}';`, function (err, result) {
+        if (err) throw err;
+        console.log(result.affectedRows + " record(s) updated");
     });
 
     res.status(200).send('running');
