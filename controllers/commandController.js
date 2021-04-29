@@ -164,14 +164,17 @@ exports.buildTxWithToken = function(req, res) {
 
 exports.getFee = function(req, res) {
 	console.log('GET /fee');
+	var inTxCount = req.params.inTxCount; // 1
+	var outTxCount = req.params.outTxCount; // 1
+	var witnessCount = req.params.witnessCount; // 2
 	var usePath = req.params.usePath;
 	var path = usePath ? testNFTPath : '';
 
 	var command = `cardano-cli transaction calculate-min-fee \
 	--tx-body-file ${path}matx.raw \
-	--tx-in-count 1 \
-	--tx-out-count 1 \
-	--witness-count 2 \
+	--tx-in-count ${inTxCount} \
+	--tx-out-count ${outTxCount} \
+	--witness-count ${witnessCount} \
 	--mainnet \
 	--protocol-params-file ${path}protocol.json`;
 

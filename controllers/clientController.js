@@ -282,8 +282,8 @@ async function buildTxWithToken(fee, available, nftAddress, paymentAddress, poli
     }   
 }
 
-async function getFee(usePath) {
-    var url = `http://localhost:4200/api/fee/${usePath}`;
+async function getFee(inTxCount, outTxCount, witnessCount, usePath) {
+    var url = `http://localhost:4200/api/fee/${inTxCount}/${outTxCount}/${witnessCount}/${usePath}`;
 
     try {
         let res = await axios.get(url);
@@ -387,7 +387,7 @@ function createAndSendTx(available, nftAddress, paymentAddress, policy, utxo, ix
     buildTx(0, available, nftAddress, paymentAddress, policy, utxo, ix, usePath).then(
         (responseBuildRaw) => {
             if (responseBuildRaw) {
-                getFee(usePath).then(
+                getFee(1, 1, 2, usePath).then(
                     (responseGetFee) => {
                         if (responseGetFee && responseGetFee !== 0) {
                             buildTx(responseGetFee, available, nftAddress, paymentAddress, policy, utxo, ix, usePath).then(
@@ -458,7 +458,7 @@ function mintandSendToken(available, addressForNft, paymentAddress, policy, utxo
                 buildTxMint(0, available, addressForNft, policy, utxo, ix, usePath, nftIdentifier).then(
                     (responseBuildRaw) => {
                         if (responseBuildRaw) {
-                            getFee(usePath).then(
+                            getFee(1, 1, 2, usePath).then(
                                 (responseGetFee) => {
                                     if (responseGetFee && responseGetFee !== 0) {
                                         buildTxMint(responseGetFee, available, addressForNft, policy, utxo, ix, usePath, nftIdentifier).then(
@@ -534,7 +534,7 @@ function sendToken(nftAddress, paymentAddress, policy, usePath, nftIdentifier, t
                     buildTxWithToken(0, available, nftAddress, paymentAddress, policy, utxo, ix, usePath, nftIdentifier).then(
                         (responseBuildRaw) => {
                             if (responseBuildRaw) {
-                                getFee(usePath).then(
+                                getFee(1, 2, 1,usePath).then(
                                     (responseGetFee) => {
                                         if (responseGetFee && responseGetFee !== 0) {
                                             buildTxWithToken(responseGetFee, available, nftAddress, paymentAddress, policy, utxo, ix, usePath, nftIdentifier).then(

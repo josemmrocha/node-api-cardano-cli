@@ -38,7 +38,7 @@ commands.route('/buildTx/:fee/:available/:nftAddress/:paymentAddress/:policy/:ut
 commands.route('/buildTxWithToken/:fee/:available/:nftAddress/:paymentAddress/:policy/:utxo/:ix/:usePath/:nftIdentifier')
   .get(CommandCtrl.buildTxWithToken);
 
-commands.route('/fee/:usePath')
+commands.route('/fee/:inTxCount/:outTxCount/:witnessCount/:usePath')
   .get(CommandCtrl.getFee);
 
 commands.route('/signTxMint/:usePath')
