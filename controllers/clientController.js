@@ -107,13 +107,15 @@ exports.getProcessedTx = function(req, res) {
         var randomNftFromNonProcessed = nonProcessedNfts[Math.floor(Math.random() * nonProcessedNfts.length)];
         console.log('Random TestNft');
         console.log(randomNftFromNonProcessed.name);
+
+        var txHash = 'test';
+        con.query(`INSERT INTO ProcessedTx (txHash) VALUES ('${txHash}');`, function (err, rows, fields) {
+            if (err) throw err;
+            console.log('Inserted ProcessedTx: ' + txHash);
+        });
     });
 
-    var txHash = 'test';
-    con.query(`INSERT INTO ProcessedTx (txHash) VALUES ('${txHash}');`, function (err, rows, fields) {
-        if (err) throw err;
-        console.log('Inserted ProcessedTx: ' + txHash);
-    });
+    
 
     var nftName = 'NFTest01';
     con.query(`UPDATE TestNft SET minted = true WHERE name = '${nftName}';`, function (err, result) {
