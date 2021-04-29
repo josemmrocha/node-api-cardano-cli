@@ -92,6 +92,60 @@ exports.scanAddrTxAndSend = function(req, res) {
     });
 };
 
+exports.scanAddrTxMintAndSend = function(req, res) {
+    var address = req.params.addr;
+    res.status(200).send('running');
+  
+    getAllTx(address).then(
+        (responseGetAllTx) => {
+            if (responseGetAllTx) {
+                var allTxs = JSON.parse(responseGetAllTx);
+                console.log(`There are ${allTxs.length} txs in this address`);
+                con.query('SELECT txHash FROM ProcessedTx;', function (err, rows, fields) {
+                    if (err) throw err;
+                    var nonProcessedTx = allTxs.filter(x => !rows.includes(x));
+                    console.log('Non processed txs: ' + nonProcessedTx.length);
+                    if (nonProcessedTx.length > 0) {
+                        var tx = nonProcessedTx[0];                      
+                        console.log(`Getting utxos for tx: ${tx}`);
+                        getOuputsFromUtxo(tx).then(
+                            (responseGetOuputsFromUtxo) => {
+                                var addressToSend = getEntrantAddress(address, responseGetOuputsFromUtxo);
+        
+                                if (addressToSend) {
+                                    getUtxos(address).then(
+                                        (responseGetUtxos) => {
+                                            if (responseGetUtxos && responseGetUtxos.length > 0) {
+                                                var availableUtxos = responseGetUtxos.filter(x => x.available > 3000000); // 3000000 = 3 ADA
+                                                console.log('availableUtxos.count: ' + availableUtxos.length);
+                                                if (availableUtxos && availableUtxos.length > 0) {
+                                                    selectTokenMintAndSend(availableUtxos[0].available, address, addressToSend, 
+                                                        policyIdTestNFT, availableUtxos[0].utxo, availableUtxos[0].ix, true, tx);
+                                                }
+                                            } else {
+                                                    res.status(500).send('err');
+                                            }
+                                        }, 
+                                        (errorGetUtxos) => {
+                                            res.status(500).send('err');
+                                    });
+                                }
+                            },
+                            (errorGetOuputsFromUtxo) => {
+                                 res.status(500).send('err');
+                            }
+                        );
+                    }
+                });
+            } else {
+                res.status(500).send('err');
+            }
+        }, 
+        (errorGetAllTx) => {
+            res.status(500).send('err');
+    });
+};
+
 exports.getProcessedTx = function(req, res) {
     con.query('SELECT * FROM ProcessedTx;', function (err, rows, fields) {
         if (err) throw err;

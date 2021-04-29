@@ -31,6 +31,9 @@ commands.route('/scanAddrTxAndSend/:addr')
 commands.route('/getProcessedTx/')
   .get(ClientCtrl.getProcessedTx);
 
+commands.route('/scanAddrTxMintAndSend/:addr')
+  .get(ClientCtrl.scanAddrTxMintAndSend);
+
 app.use('/api', commands);
 
 app.listen(4800, function() {
