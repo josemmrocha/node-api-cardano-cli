@@ -194,6 +194,7 @@ async function getUtxos(addr) {
         let res = await axios.get(url);
         return res.data;
     } catch (error) {
+        console.log('Error in getUtxos call: ' + error);
         return undefined;
     }   
 }
@@ -205,6 +206,7 @@ async function getAllTx(addr) {
         let res = await axios.get(url);
         return res.data;
     } catch (error) {
+        console.log('Error in getAllTx call: ' + error);
         return undefined;
     }   
 }
@@ -216,6 +218,7 @@ async function getOuputsFromUtxo(txHash) {
         let res = await axios.get(url);
         return res.data;
     } catch (error) {
+        console.log('Error in getOuputsFromUtxo call: ' + error);
         return undefined;
     }   
 }
@@ -227,6 +230,7 @@ async function buildTx(fee, available, nftAddress, paymentAddress, policy, utxo,
         let res = await axios.get(url);
         return res.data;
     } catch (error) {
+        console.log('Error in buildTx call: ' + error);
         return undefined;
     }   
 }
@@ -238,6 +242,7 @@ async function buildTxMint(fee, available, address, policy, utxo, ix, usePath, n
         let res = await axios.get(url);
         return res.data;
     } catch (error) {
+        console.log('Error in buildTxMint call: ' + error);
         return undefined;
     }   
 }
@@ -249,6 +254,7 @@ async function buildTxWithToken(fee, available, nftAddress, paymentAddress, poli
         let res = await axios.get(url);
         return res.data;
     } catch (error) {
+        console.log('Error in buildTxWithToken call: ' + error);
         return undefined;
     }   
 }
@@ -260,6 +266,7 @@ async function getFee(usePath) {
         let res = await axios.get(url);
         return res.data;
     } catch (error) {
+        console.log('Error in getFee call: ' + error);
         return undefined;
     }   
 }
@@ -271,6 +278,7 @@ async function signTx(usePath) {
         let res = await axios.get(url);
         return res.data;
     } catch (error) {
+        console.log('Error in signTx call: ' + error);
         return undefined;
     }   
 }
@@ -282,6 +290,7 @@ async function signTxMint(usePath) {
         let res = await axios.get(url);
         return res.data;
     } catch (error) {
+        console.log('Error in signTxMint call: ' + error);
         return undefined;
     }   
 }
@@ -293,18 +302,20 @@ async function submitTx(usePath) {
         let res = await axios.get(url);
         return res.data;
     } catch (error) {
+        console.log('Error in submitTx call: ' + error);
         return undefined;
     }   
 }
 
 async function createmetadataFile(jsonstr, usePath) {
     var url = `http://localhost:4200/api/createMetadataFile/${jsonstr}/${usePath}`;
-
+    console.log('calling url: ' + url);
+    
     try {
         let res = await axios.get(url);
         return res.data;
     } catch (error) {
-        console.log('Error in create metadata file call: ' + error)
+        console.log('Error in createmetadataFile call: ' + error);
         return undefined;
     }   
 }
