@@ -123,7 +123,7 @@ exports.getProcessedTx = function(req, res) {
 
     var nftName = 'NFTest01';
     var addressSent = 'afadf';
-    con.query(`UPDATE TestNft SET addressSent = ${addressSent} WHERE name = '${nftName}';`, function (err, result) {
+    con.query(`UPDATE TestNft SET addressSent = '${addressSent}' WHERE name = '${nftName}';`, function (err, result) {
         if (err) throw err;
         console.log(result.affectedRows + " record(s) updated");
     });
