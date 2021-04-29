@@ -1,6 +1,8 @@
 const axios = require('axios');
+const { createMetadataFile } = require('./commandController');
 var tools = require('./tools/tools');
 const policyIdTestNFT = '79d04870cc49ea029f95e7ad19576981620b4665b921c95f79b2a726';
+const publisherName = 'test.com'; // adachess.com
 
 exports.scanAndSend = function(req, res) {
     var address = req.params.addr;
@@ -53,7 +55,7 @@ exports.scanAddrTxAndSend = function(req, res) {
                                 getUtxos(address).then(
                                     (responseGetUtxos) => {
                                         if (responseGetUtxos && responseGetUtxos.length > 0) {
-                                            var availableUtxos = responseGetUtxos.filter(x => x.available > 3000000); // 10000000 = 10 ADA
+                                            var availableUtxos = responseGetUtxos.filter(x => x.available > 3000000); // 3000000 = 3 ADA
                                             console.log('availableUtxos.count: ' + availableUtxos.length);
                                             if (availableUtxos && availableUtxos.length > 0) {
                                                 createAndSendTx(availableUtxos[0].available, address, addressToSend, 
@@ -81,6 +83,11 @@ exports.scanAddrTxAndSend = function(req, res) {
             res.status(500).send('err');
     });
 };
+
+exports.getProcessedTx = function(req, res) {
+    getProcessedTx();
+    res.status(200).send('running');
+}
 
 async function getUtxos(addr) {
     var url = `http://localhost:4200/api/utxos/${addr}`;
@@ -126,6 +133,28 @@ async function buildTx(fee, available, nftAddress, paymentAddress, policy, utxo,
     }   
 }
 
+async function buildTxMint(fee, available, address, policy, utxo, ix, usePath, nftIdentifier) {
+    var url = `http://localhost:4200/api/buildTxMint/${fee}/${available}/${address}/${policy}/${utxo}/${ix}/${usePath}/${nftIdentifier}`;
+
+    try {
+        let res = await axios.get(url);
+        return res.data;
+    } catch (error) {
+        return undefined;
+    }   
+}
+
+async function buildTxWithToken(fee, available, nftAddress, paymentAddress, policy, utxo, ix, usePath, nftIdentifier) {
+    var url = `http://localhost:4200/api/buildTxWithToken/${fee}/${available}/${nftAddress}/${paymentAddress}/${policy}/${utxo}/${ix}/${usePath}/${nftIdentifier}`;
+
+    try {
+        let res = await axios.get(url);
+        return res.data;
+    } catch (error) {
+        return undefined;
+    }   
+}
+
 async function getFee(usePath) {
     var url = `http://localhost:4200/api/fee/${usePath}`;
 
@@ -148,8 +177,30 @@ async function signTx(usePath) {
     }   
 }
 
+async function signTxMint(usePath) {
+    var url = `http://localhost:4200/api/signTxMint/${usePath}`;
+
+    try {
+        let res = await axios.get(url);
+        return res.data;
+    } catch (error) {
+        return undefined;
+    }   
+}
+
 async function submitTx(usePath) {
     var url = `http://localhost:4200/api/submitTx/${usePath}`;
+
+    try {
+        let res = await axios.get(url);
+        return res.data;
+    } catch (error) {
+        return undefined;
+    }   
+}
+
+async function createmetadataFile(jsonstr, usePath) {
+    var url = `http://localhost:4200/api/createMetadataFile/${jsonstr}/${usePath}`;
 
     try {
         let res = await axios.get(url);
@@ -196,7 +247,7 @@ function getEntrantAddress(myAddr, responseGetOuputsFromUtxos) {
 function createAndSendTx(available, nftAddress, paymentAddress, policy, utxo, ix, usePath) {
     console.log(`Going to create and sent Tx. NftAddress: ${nftAddress}. PaymentAddress: ${paymentAddress}.  
         Available: ${available}. Policy: ${policy}.  Utxo: ${utxo}.  ix: ${ix}. UsePath: ${usePath}`);
-
+       
     buildTx(0, available, nftAddress, paymentAddress, policy, utxo, ix, usePath).then(
         (responseBuildRaw) => {
             if (responseBuildRaw) {
@@ -243,4 +294,131 @@ function createAndSendTx(available, nftAddress, paymentAddress, policy, utxo, ix
             console.log('Error Building Raw');
         }
     );
+}
+
+function mintandSendToken(available, addressForNft, paymentAddress, policy, utxo, ix, usePath, nftIdentifier, name, imagePath, location) {
+    console.log(`Going to mint token. Address: ${addressForNft}. Available: ${available}.  
+        Policy: ${policy}.  Utxo: ${utxo}.  ix: ${ix}. 
+        UsePath: ${usePath}. NftIdentifier: ${nftIdentifier}.`);
+
+    var metadata = getMintMetadata(policy, publisherName, nftIdentifier, name, imagePath, location);
+
+    createmetadataFile(metadata, usePath).then(
+        (createMetadataFileResponse) => {
+            buildTxMint(0, available, addressForNft, policy, utxo, ix, usePath, nftIdentifier).then(
+                (responseBuildRaw) => {
+                    if (responseBuildRaw) {
+                        getFee(usePath).then(
+                            (responseGetFee) => {
+                                if (responseGetFee && responseGetFee !== 0) {
+                                    buildTxMint(responseGetFee, available, addressForNft, policy, utxo, ix, usePath, nftIdentifier).then(
+                                        (responseBuildTx) => {
+                                            if (responseBuildTx) {
+                                                signTxMint(usePath).then(
+                                                    (responseSignTx) => {
+                                                        if (responseSignTx) {
+                                                            submitTx(usePath).then(
+                                                                (responseSubmitTx) => {
+                                                                    if (responseSubmitTx) {
+                                                                        console.log('SUCCESS Minting TOKEN');
+                                                                         sendToken(available, addressForNft, paymentAddress, policy, utxo, ix, usePath, nftIdentifier);
+                                                                    }
+                                                                },
+                                                                (errorSubmitTx) => {
+                                                                    console.log('Error Submitting Tx');
+                                                                }
+                                                            );
+                                                        }
+                                                    },
+                                                    (errorSignTx) => {
+                                                        console.log('Error Signing Fee');
+                                                    }
+                                                );
+                                            }
+                                        },
+                                        (errorBuildTx) => {
+                                            console.log('Error Building Tx');
+                                        }
+                                    );
+                                }
+                            },
+                            (errorGetFee) => {
+                                console.log('Error Getting Fee');
+                            }
+                        );
+                    }
+                },
+                (errorBuildRaw) => {
+                    console.log('Error Building Raw');
+                }
+            );
+        },
+        (createMetadataFileError) => {
+            console.log('Error creating metadata file');
+        }
+    );
+}
+
+function sendToken(available, nftAddress, paymentAddress, policy, utxo, ix, usePath, nftIdentifier) {
+    console.log(`Going to send token. NftAddress: ${nftAddress}. PaymentAddress: ${paymentAddress}.  
+        Available: ${available}. Policy: ${policy}.  Utxo: ${utxo}.  ix: ${ix}. UsePath: ${usePath}. 
+        NftIdentifier: ${nftIdentifier}`);
+       
+    buildTxWithToken(0, available, nftAddress, paymentAddress, policy, utxo, ix, usePath, nftIdentifier).then(
+        (responseBuildRaw) => {
+            if (responseBuildRaw) {
+                getFee(usePath).then(
+                    (responseGetFee) => {
+                        if (responseGetFee && responseGetFee !== 0) {
+                            buildTxWithToken(responseGetFee, available, nftAddress, paymentAddress, policy, utxo, ix, usePath, nftIdentifier).then(
+                                (responseBuildTx) => {
+                                    if (responseBuildTx) {
+                                        signTx(usePath).then(
+                                            (responseSignTx) => {
+                                                if (responseSignTx) {
+                                                    submitTx(usePath).then(
+                                                        (responseSubmitTx) => {
+                                                            if (responseSubmitTx) {
+                                                                console.log('SUCCESS Sending Tx');
+                                                            }
+                                                        },
+                                                        (errorSubmitTx) => {
+                                                            console.log('Error Submitting Tx');
+                                                        }
+                                                    );
+                                                }
+                                            },
+                                            (errorSignTx) => {
+                                                console.log('Error Signing Fee');
+                                            }
+                                        );
+                                    }
+                                },
+                                (errorBuildTx) => {
+                                    console.log('Error Building Tx');
+                                }
+                            );
+                        }
+                    },
+                    (errorGetFee) => {
+                        console.log('Error Getting Fee');
+                    }
+                );
+            }
+        },
+        (errorBuildRaw) => {
+            console.log('Error Building Raw');
+        }
+    );
+}
+
+function getMintMetadata(policyId, publisher, nftIdentifier, name, imagePath, location) {
+    var str = `{"721":{${policyId}:{"publisher":${publisher},${nftIdentifier}:{"name":${name},"image":${imagePath},"location":${location}}}}}`;
+    return str;
+}
+
+function getProcessedTx() {
+    var result = tools.ExecuteGetQueryinDB('SELECT * FROM ProcessedTx');
+    console.log('PROCESSED RESULT');
+    console.log(result);
 }

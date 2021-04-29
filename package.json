@@ -4,7 +4,8 @@
  "dependencies": {
   "axios": "^0.19.2",
   "body-parser": "^1.5.1",
-  "express": "^4.7.1",
-  "method-override": "^2.1.2"
+  "express": "^4.17.1",
+  "method-override": "^2.1.2",
+  "mysql": "^2.18.1"
  }
 }

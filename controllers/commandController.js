@@ -59,7 +59,7 @@ exports.getUtxos = function(req, res) {
 	});
 };
 
-exports.buildTxToMint = function(req, res) {
+exports.buildTxMint = function(req, res) {
 	var fee = req.params.fee;
 	var available = req.params.available;
 	var address = req.params.address;
@@ -67,18 +67,19 @@ exports.buildTxToMint = function(req, res) {
 	var utxo = req.params.utxo;
 	var ix = req.params.ix;
 	var usePath = req.params.usePath;
-	var path = usePath ? testNFTPath : '';
+	var nftIdentifier = req.params.nftIdentifier;
 
+	var path = usePath ? testNFTPath : '';
 	var returned = fee === 0 ? 0 : available - fee;
 
 	exec(`cardano-cli transaction build-raw \
 	--mary-era \
 	--fee ${fee} \
 	--tx-in ${utxo}#${ix} \
-	--metadata-json-file metadata.json \
-	--tx-out ${address}+${returned}+"1 ${policy}.MountainGorilla + 1 ${policy}.BrownBear"\
-	--mint="1 ${policy}.MountainGorilla + 1 ${policy}.BrownBear"\
-	--out-file matx.raw`, (err, stdout, stderr) => {
+	--metadata-json-file ${path}metadata.json \
+	--tx-out ${address}+${returned}+"1 ${policy}.${nftIdentifier}"\
+	--mint="1 ${policy}.${nftIdentifier}"\
+	--out-file ${path}matx.raw`, (err, stdout, stderr) => {
 		if (err) {
 			console.log(`err: ${err}`);
 			res.status(500).jsonp(err);
@@ -117,6 +118,45 @@ exports.buildTx = function(req, res) {
 	--tx-in ${utxo}#${ix} \
 	--tx-out ${nftAddress}+${returnedToNftAddr}\
 	--tx-out ${paymentAddress}+${sendToBuyerAddr}\
+	--out-file ${path}matx.raw`, (err, stdout, stderr) => {
+		if (err) {
+			console.log(`err: ${err}`);
+			res.status(500).jsonp(err);
+  		}
+		if (stderr) {
+			console.log(`stderr: ${stderr}`);
+			res.status(500).jsonp(stderr);
+  		}	
+
+	    console.log(`stdout: ${stdout}`);
+		console.log('GET /buildTx/' + req.params.fee + '/' + req.params.available);
+
+		res.status(200).jsonp(true);
+	});
+};
+
+exports.buildTxWithToken = function(req, res) {
+	var fee = req.params.fee;
+	var available = req.params.available;
+	var nftAddress = req.params.nftAddress;
+	var paymentAddress = req.params.paymentAddress;
+	var policy = req.params.policy;
+	var utxo = req.params.utxo;
+	var ix = req.params.ix;
+	var usePath = req.params.usePath;
+	var nftIdentifier = req.params.nftIdentifier;
+
+	var path = usePath ? testNFTPath : '';
+	var transactionAmount = 1500000; // 10000000 = 10 ADA
+	var returnedToNftAddr = fee === 0 ? 0 : available - fee - transactionAmount;
+	var sendToBuyerAddr = fee === 0 ? 0 : transactionAmount;
+
+	exec(`cardano-cli transaction build-raw \
+	--mary-era \
+	--fee ${fee} \
+	--tx-in ${utxo}#${ix} \
+	--tx-out ${nftAddress}+${returnedToNftAddr}\
+	--tx-out ${paymentAddress}+${sendToBuyerAddr}+"1 ${policy}.${nftIdentifier}"\\
 	--out-file ${path}matx.raw`, (err, stdout, stderr) => {
 		if (err) {
 			console.log(`err: ${err}`);
@@ -214,7 +254,6 @@ exports.signTx = function(req, res) {
 	});
 };
 
-
 exports.submitTx = function(req, res) {
 	var usePath = req.params.usePath;
 	var path = usePath ? testNFTPath : '';
@@ -235,3 +274,26 @@ exports.submitTx = function(req, res) {
 		res.status(200).jsonp(true);
 	});
 };
+
+exports.createMetadataFile = function(req, res) {
+	var jsonstr = req.params.jsonstr;
+	var usePath = req.params.usePath;
+	var path = usePath ? testNFTPath : '';
+
+	exec(`echo '${jsonstr}' > ${path}metadata.json`, (err, stdout, stderr) => {
+		if (err) {
+			console.log(`err: ${err}`);
+			res.status(500).jsonp(err);
+  		}
+		if (stderr) {
+			console.log(`stderr: ${stderr}`);
+			res.status(500).jsonp(stderr);
+  		}
+
+	    console.log(`stdout: ${stdout}`);
+		console.log('GET /createMetadataFile');	
+
+		res.status(200).jsonp(true);
+	});
+};
+

@@ -29,12 +29,14 @@ commands.route('/utxos/:addr')
 commands.route('/policyId/:usePath')
   .get(CommandCtrl.getPolicyId);
 
-commands.route('/buildTxToMint/:fee/:available/:address/:policy/:utxo/:ix/:usePath')
-  .get(CommandCtrl.buildTx);
+commands.route('/buildTxToMint/:fee/:available/:address/:policy/:utxo/:ix/:usePath/:nftIdentifier')
+  .get(CommandCtrl.buildTxMint);
 
 commands.route('/buildTx/:fee/:available/:nftAddress/:paymentAddress/:policy/:utxo/:ix/:usePath')
   .get(CommandCtrl.buildTx);
 
+commands.route('/buildTxWithToken/:fee/:available/:nftAddress/:paymentAddress/:policy/:utxo/:ix/:usePath/:nftIdentifier')
+  .get(CommandCtrl.buildTxWithToken);
 
 commands.route('/fee/:usePath')
   .get(CommandCtrl.getFee);
@@ -47,6 +49,9 @@ commands.route('/signTxMint/:usePath')
 
 commands.route('/submitTx/:usePath')
   .get(CommandCtrl.submitTx);
+
+commands.route('/createMetadataFile/:jsonstr/:usePath')
+  .get(CommandCtrl.createMetadataFile);
 
 commands.route('/txUtxos/:txHash')
   .get(ApiCtrl.getTxUtxos);
