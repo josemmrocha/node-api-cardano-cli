@@ -628,7 +628,7 @@ function sendToken2(nftAddress, paymentAddress, policy, usePath, nftIdentifier, 
             if (responseGetLastUtxo) {          
                     var ix = 0;
                     var utxo = responseGetLastUtxo;
-                    console.log(`Going to send token. NftAddress: ${nftAddress}. PaymentAddress: ${paymentAddress}. Available: ${available}. Policy: ${policy}.  Utxo: ${utxo}.  ix: ${ix}. UsePath: ${usePath}. NftIdentifier: ${nftIdentifier}`);             
+                    console.log(`Going to send token. NftAddress: ${nftAddress}. PaymentAddress: ${paymentAddress}. Policy: ${policy}.  Utxo: ${utxo}.  ix: ${ix}. UsePath: ${usePath}. NftIdentifier: ${nftIdentifier}`);             
                     buildTxWithToken2(0, paymentAddress, policy, utxo, ix, usePath, nftIdentifier).then(
                         (responseBuildRaw) => {
                             if (responseBuildRaw) {
