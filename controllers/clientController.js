@@ -22,271 +22,167 @@ var con = mysql.createConnection({
     database: 'nft'
 });
 
-exports.scanAndSend = function(req, res) {
-    var address = req.params.addr;
-    res.status(200).send('running');
-  
-    getUtxos(address).then(
-        (responseGetUtxos) => {
-            if (responseGetUtxos) {
-                responseGetUtxos.forEach(element => {
-                    log.info(`Getting inputs for hash: ${element.utxo}`);
-
-                    getOuputsFromUtxo(element.utxo).then(
-                        (responseGetOuputsFromUtxo) => {
-                            var addressToSend = getEntrantAddress(address, responseGetOuputsFromUtxo);
-
-                            if (addressToSend) {
-                                createAndSendTx(element.available, address, addressToSend, 
-                                    policyIdTestNFT, element.utxo, element.ix, true);
-                            }
-                        },
-                        (errorGetOuputsFromUtxo) => {
-                            res.status(500).send('err');
-                        }
-                    );
-                });
-            } else {
-                res.status(500).send('err');
-            }
-        }, 
-        (errorGetUtxos) => {
-            res.status(500).send('err');
-    });
-};
-
-exports.scanAddrTxAndSend = function(req, res) {
-    var address = req.params.addr;
-    res.status(200).send('running');
-  
-    getAllTx(address).then(
-        (responseGetAllTx) => {
-            if (responseGetAllTx) {
-                var allTxs = JSON.parse(responseGetAllTx);
-                log.info(`There are ${allTxs.length} txs in this address`);
-
-                if (allTxs && allTxs.length > 0) {
-                    allTxs.forEach(tx => {
-                        log.info(`Getting utxos for tx: ${tx}`);
-                        getOuputsFromUtxo(tx).then(
-                            (responseGetOuputsFromUtxo) => {
-                                var addressToSend = getEntrantAddress(address, responseGetOuputsFromUtxo);
-    
-                                if (addressToSend) {
-                                    getUtxos(address).then(
-                                        (responseGetUtxos) => {
-                                            if (responseGetUtxos && responseGetUtxos.length > 0) {
-                                                var availableUtxos = responseGetUtxos.filter(x => x.available > minAvailableQtyInUtxo); 
-                                                log.info('availableUtxos.count: ' + availableUtxos.length);
-                                                if (availableUtxos && availableUtxos.length > 0) {
-                                                    createAndSendTx(availableUtxos[0].available, address, addressToSend, 
-                                                        policyIdTestNFT, availableUtxos[0].utxo, availableUtxos[0].ix, true);
-                                                }
-                                            } else {
-                                                res.status(500).send('err');
-                                            }
-                                        }, 
-                                        (errorGetUtxos) => {
-                                            res.status(500).send('err');
-                                    });
-                                }
-                            },
-                            (errorGetOuputsFromUtxo) => {
-                                res.status(500).send('err');
-                            }
-                        );
-                    });
-                }
-            } else {
-                res.status(500).send('err');
-            }
-        }, 
-        (errorGetAllTx) => {
-            res.status(500).send('err');
-    });
-};
-
 exports.scanAddrTxMintAndSend = function(req, res) {
     var address = req.params.addr;
     res.status(200).send('running');
-  
-    getAllTx(address).then(
-        (responseGetAllTx) => {
-            if (responseGetAllTx) {
-                var allTxs = JSON.parse(responseGetAllTx);
-                log.info(`There are ${allTxs.length} txs in this address`);
 
-                if (allTxs && allTxs.length > 0) {
-                    con.query('SELECT txHash FROM ProcessedTx;', function (err, rows, fields) {
-                        if (err) throw err;
-                        var nonProcessedTx = allTxs.filter(x => !rows.includes(x));
-                        log.info('Non processed txs: ' + nonProcessedTx.length);
-                        if (nonProcessedTx.length > 0) {
-                            var tx = nonProcessedTx[0];                      
-                            log.info(`Getting utxos for tx: ${tx}`);
-                            getOuputsFromUtxo(tx).then(
-                                (responseGetOuputsFromUtxo) => {
-                                    var addressToSend = getEntrantAddress(address, responseGetOuputsFromUtxo);
-            
-                                    if (addressToSend) {
-                                        getUtxos(address).then(
-                                            (responseGetUtxos) => {
-                                                if (responseGetUtxos && responseGetUtxos.length > 0) {
-                                                    var availableUtxos = responseGetUtxos.filter(x => x.available > minAvailableQtyInUtxo);
-                                                    log.info('availableUtxos.count: ' + availableUtxos.length);
-                                                    // TODO aqui coger no la primera, sino la que de verdad tiene el token.
-                                                    if (availableUtxos && availableUtxos.length > 0) {
-                                                        selectTokenMintAndSend(availableUtxos[0].available, address, addressToSend, 
-                                                            policyIdTestNFT, availableUtxos[0].utxo, availableUtxos[0].ix, true, tx);
+    try {
+        getAllTx(address).then(
+            (responseGetAllTx) => {
+                if (responseGetAllTx) {
+                    var allTxs = JSON.parse(responseGetAllTx);
+                    log.info(`There are ${allTxs.length} txs in this address`);
+    
+                    if (allTxs && allTxs.length > 0) {
+                        con.query('SELECT txHash FROM ProcessedTx;', function (err, rows, fields) {
+                            if (err) throw err;
+                            var nonProcessedTx = allTxs.filter(x => !rows.includes(x));
+                            log.info('Non processed txs: ' + nonProcessedTx.length);
+                            if (nonProcessedTx.length > 0) {
+                                var tx = nonProcessedTx[0];                      
+                                log.info(`Getting utxos for tx: ${tx}`);
+                                getOuputsFromUtxo(tx).then(
+                                    (responseGetOuputsFromUtxo) => {
+                                        var addressToSend = getEntrantAddress(address, responseGetOuputsFromUtxo);
+                
+                                        if (addressToSend) {
+                                            getUtxos(address).then(
+                                                (responseGetUtxos) => {
+                                                    if (responseGetUtxos && responseGetUtxos.length > 0) {
+                                                        var availableUtxos = responseGetUtxos.filter(x => x.available > minAvailableQtyInUtxo);
+                                                        log.info('availableUtxos.count: ' + availableUtxos.length);
+                                                        // TODO aqui coger no la primera, sino la que de verdad tiene el token.
+                                                        if (availableUtxos && availableUtxos.length > 0) {
+                                                            selectTokenMintAndSend(availableUtxos[0].available, address, addressToSend, 
+                                                                policyIdTestNFT, availableUtxos[0].utxo, availableUtxos[0].ix, true, tx);
+                                                        }
+                                                    } else {
+                                                        log.info('There are no utxos');
                                                     }
-                                                } else {
-                                                    log.info('There are no utxos');
-                                                }
-                                            }, 
-                                            (errorGetUtxos) => {
-                                                log.error(`Error errorGetUtxos: ` + errorGetUtxos);
-                                            });
+                                                }, 
+                                                (errorGetUtxos) => {
+                                                    log.error(`Error errorGetUtxos: ` + errorGetUtxos);
+                                                });
+                                        }
+                                    },
+                                    (errorGetOuputsFromUtxo) => {
+                                        log.error(`Error errorGetOuputsFromUtxo: ` + errorGetOuputsFromUtxo);
                                     }
-                                },
-                                (errorGetOuputsFromUtxo) => {
-                                    log.error(`Error errorGetOuputsFromUtxo: ` + errorGetOuputsFromUtxo);
-                                }
-                            );
-                        }
-                    });
-                }      
-            } else {
-                log.info(`There are no tx.`);
-            }
-        }, 
-        (errorGetAllTx) => {
-            log.error(`Error errorGetAllTx: ` + errorGetAllTx);
-    });
+                                );
+                            }
+                        });
+                    }      
+                } else {
+                    log.info(`There are no tx.`);
+                }
+            }, 
+            (errorGetAllTx) => {
+                log.error(`Error errorGetAllTx: ` + errorGetAllTx);
+        });
+    } catch(error) {
+        log.error(`Error main job: ` + error);
+    }  
 };
 
 exports.sendMintedNotSentTokens = function(req, res) {
     var address = req.params.addr;
     res.status(200).send('running');
 
-    con.query('SELECT * FROM TestNft Where minted = 1 and addressSent = 0;', function (err, rows, fields) {
-        if (err) throw err;
-        log.info(`Found ${rows.length} minted not sent token.`);                 
-        if (rows && rows.length > 0) {
-            sendToken(address, rows[0].paymentAddress, policyIdTestNFT, true, rows[0].identifier, rows[0].txHash);
-        }
-    });
-};
-
-exports.getProcessedTx = function(req, res) {
-    con.query('SELECT * FROM ProcessedTx;', function (err, rows, fields) {
-        if (err) throw err;
-    });
-
-    con.query('SELECT * FROM TestNft;', function (err, rows, fields) {
-        if (err) throw err;
-        var nonProcessedNfts = rows.filter(x => x.minted !== true);
-        var randomNftFromNonProcessed = nonProcessedNfts[Math.floor(Math.random() * nonProcessedNfts.length)];
-
-        var txHash = 'test';
-        con.query(`INSERT INTO ProcessedTx (txHash) VALUES ('${txHash}');`, function (err, rows, fields) {
+    try {
+        con.query('SELECT * FROM TestNft Where minted = 1 and addressSent = 0;', function (err, rows, fields) {
             if (err) throw err;
+            log.info(`Found ${rows.length} minted not sent token.`);                 
+            if (rows && rows.length > 0) {
+                sendToken(address, rows[0].paymentAddress, policyIdTestNFT, true, rows[0].identifier, rows[0].txHash);
+            }
         });
-    });
-
-    
-
-    var nftName = 'NFTest01';
-    con.query(`UPDATE TestNft SET minted = true WHERE name = '${nftName}';`, function (err, result) {
-        if (err) throw err;
-    });
-
-    var nftName = 'NFTest01';
-    var addressSent = 'afadf';
-    con.query(`UPDATE TestNft SET addressSent = '${addressSent}' WHERE name = '${nftName}';`, function (err, result) {
-        if (err) throw err;
-    });
-
-    res.status(200).send('running');
-}
+    } catch(error) {
+        log.info(`Error sendMintedNotSentTokens: ${error}.`);                 
+    }
+};
 
 exports.sendAllUtxosToAddr = function(req, res) {
     var nftAddress = req.params.nftAddress;
     var paymentAddress = req.params.paymentAddress;
 
-    getUtxos(nftAddress).then(
-        (responseGetUtxos) => {
-            if (responseGetUtxos && responseGetUtxos.length > 0) {
-                log.info('availableUtxos.count: ' + responseGetUtxos.length);
-                if (responseGetUtxos && responseGetUtxos.length > 0) { // TODO ojo, wuedan como available 0?
-                    var request = {
-                        fee: 0,
-                        paymentAddress: paymentAddress,
-                        usePath: true,
-                        utxoInfoList: responseGetUtxos
-                    };
-
-                    log.info(`Going to send multiple inputs tx to ${paymentAddress}`);             
-
-                    buildTxMultipleInputs(request).then(
-                        (responseBuildRaw) => {
-                            if (responseBuildRaw) {
-                                getFee(responseGetUtxos.length, 1, 1, true).then(
-                                    (responseGetFee) => {
-                                        if (responseGetFee && responseGetFee !== 0) {
-                                            var request = {
-                                                fee: responseGetFee,
-                                                paymentAddress: paymentAddress,
-                                                usePath: true,
-                                                utxoInfoList: responseGetUtxos
-                                            };
-                                            buildTxMultipleInputs(request).then(
-                                                (responseBuildTx) => {
-                                                    if (responseBuildTx) {
-                                                        signTx(true).then(
-                                                            (responseSignTx) => {
-                                                                if (responseSignTx) {
-                                                                    submitTx(true).then(
-                                                                        (responseSubmitTx) => {
-                                                                            if (responseSubmitTx) {
-                                                                                log.info('SUCCESS Sending Tx');
+    try {
+        getUtxos(nftAddress).then(
+            (responseGetUtxos) => {
+                if (responseGetUtxos && responseGetUtxos.length > 0) {
+                    log.info('availableUtxos.count: ' + responseGetUtxos.length);
+                    if (responseGetUtxos && responseGetUtxos.length > 0) { // TODO ojo, wuedan como available 0?
+                        var request = {
+                            fee: 0,
+                            paymentAddress: paymentAddress,
+                            usePath: true,
+                            utxoInfoList: responseGetUtxos
+                        };
+    
+                        log.info(`Going to send multiple inputs tx to ${paymentAddress}`);             
+    
+                        buildTxMultipleInputs(request).then(
+                            (responseBuildRaw) => {
+                                if (responseBuildRaw) {
+                                    getFee(responseGetUtxos.length, 1, 1, true).then(
+                                        (responseGetFee) => {
+                                            if (responseGetFee && responseGetFee !== 0) {
+                                                var request = {
+                                                    fee: responseGetFee,
+                                                    paymentAddress: paymentAddress,
+                                                    usePath: true,
+                                                    utxoInfoList: responseGetUtxos
+                                                };
+                                                buildTxMultipleInputs(request).then(
+                                                    (responseBuildTx) => {
+                                                        if (responseBuildTx) {
+                                                            signTx(true).then(
+                                                                (responseSignTx) => {
+                                                                    if (responseSignTx) {
+                                                                        submitTx(true).then(
+                                                                            (responseSubmitTx) => {
+                                                                                if (responseSubmitTx) {
+                                                                                    log.info('SUCCESS Sending Tx');
+                                                                                }
+                                                                            },
+                                                                            (errorSubmitTx) => {
+                                                                                log.error('Error Submitting Tx');
                                                                             }
-                                                                        },
-                                                                        (errorSubmitTx) => {
-                                                                            log.error('Error Submitting Tx');
-                                                                        }
-                                                                    );
+                                                                        );
+                                                                    }
+                                                                },
+                                                                (errorSignTx) => {
+                                                                    log.error('Error Signing Fee');
                                                                 }
-                                                            },
-                                                            (errorSignTx) => {
-                                                                log.error('Error Signing Fee');
-                                                            }
-                                                        );
+                                                            );
+                                                        }
+                                                    },
+                                                    (errorBuildTx) => {
+                                                        log.error('Error Building Tx');
                                                     }
-                                                },
-                                                (errorBuildTx) => {
-                                                    log.error('Error Building Tx');
-                                                }
-                                            );
+                                                );
+                                            }
+                                        },
+                                        (errorGetFee) => {
+                                            log.error('Error Getting Fee');
                                         }
-                                    },
-                                    (errorGetFee) => {
-                                        log.error('Error Getting Fee');
-                                    }
-                                );
+                                    );
+                                }
+                            },
+                            (errorBuildRaw) => {
+                                log.error('Error Building Raw');
                             }
-                        },
-                        (errorBuildRaw) => {
-                            log.error('Error Building Raw');
-                        }
-                    );
+                        );
+                    }
+                } else {
+                    log.info('There are no utxos');
                 }
-            } else {
-                log.info('There are no utxos');
-            }
-        }, 
-        (errorGetUtxos) => {
-            log.error('Error Getting utxos');
-        });
+            }, 
+            (errorGetUtxos) => {
+                log.error('Error Getting utxos');
+            });
+    } catch(error) {
+        log.error('Error sendAllUtxosToAddr: ' + error);
+    }
 
     res.status(200).send('running');
 }

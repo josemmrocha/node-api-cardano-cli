@@ -22,15 +22,6 @@ app.use(router);
 // API routes
 var commands = express.Router();
 
-commands.route('/scanAndSend/:addr')
-  .get(ClientCtrl.scanAndSend);
-
-commands.route('/scanAddrTxAndSend/:addr')
-  .get(ClientCtrl.scanAddrTxAndSend);
-
-commands.route('/getProcessedTx/')
-  .get(ClientCtrl.getProcessedTx);
-
 commands.route('/scanAddrTxMintAndSend/:addr')
   .get(ClientCtrl.scanAddrTxMintAndSend);
 

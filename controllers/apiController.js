@@ -14,18 +14,23 @@ exports.getAddrUtxos = function(req, res) {
 
     var options = tools.getBlockfrostOptions(host, basePath + `addresses/${address}/utxos`, blockFrostApiKey);
 
-    https.get(options, (resp) => {
-        let data = '';
-        resp.on('data', (chunk) => {
-            data += chunk;
-        });  
-        resp.on('end', () => {
-            res.status(200).jsonp(data);
+    try {
+        https.get(options, (resp) => {
+            let data = '';
+            resp.on('data', (chunk) => {
+                data += chunk;
+            });  
+            resp.on('end', () => {
+                res.status(200).jsonp(data);
+            });
+        }).on("error", (err) => {
+            log.error("Error: " + err.message);
+            res.status(500).jsonp('err');
         });
-    }).on("error", (err) => {
+    } catch (error) {
         log.error("Error: " + err.message);
-        res.send(500, 'err');
-    });
+        res.status(500).jsonp('err');
+    }   
 };
 
 exports.getTxUtxos = function(req, res) {
@@ -33,18 +38,23 @@ exports.getTxUtxos = function(req, res) {
 
     var options = tools.getBlockfrostOptions(host, basePath + `txs/${txHash}/utxos`, blockFrostApiKey);
 
-	https.get(options, (resp) => {
-        let data = '';
-        resp.on('data', (chunk) => {
-            data += chunk;
-        });  
-        resp.on('end', () => {
-            res.status(200).jsonp(data);
+    try {
+        https.get(options, (resp) => {
+            let data = '';
+            resp.on('data', (chunk) => {
+                data += chunk;
+            });  
+            resp.on('end', () => {
+                res.status(200).jsonp(data);
+            });
+        }).on("error", (err) => {
+            log.error("Error: " + err.message);
+            res.send(500, 'err');
         });
-    }).on("error", (err) => {
+    } catch (error) {
         log.error("Error: " + err.message);
-        res.send(500, 'err');
-    });
+        res.status(500).jsonp('err');
+    }  	
 };
 
 exports.getAllTx = function(req, res) {
@@ -52,16 +62,21 @@ exports.getAllTx = function(req, res) {
 
     var options = tools.getBlockfrostOptions(host, basePath + `addresses/${addr}/txs`, blockFrostApiKey);
 
-	https.get(options, (resp) => {
-        let data = '';
-        resp.on('data', (chunk) => {
-            data += chunk;
-        });  
-        resp.on('end', () => {
-            res.status(200).jsonp(data);
+    try {
+        https.get(options, (resp) => {
+            let data = '';
+            resp.on('data', (chunk) => {
+                data += chunk;
+            });  
+            resp.on('end', () => {
+                res.status(200).jsonp(data);
+            });
+        }).on("error", (err) => {
+            log.error("Error: " + err.message);
+            res.send(500, 'err');
         });
-    }).on("error", (err) => {
+    } catch (error) {
         log.error("Error: " + err.message);
-        res.send(500, 'err');
-    });
+        res.status(500).jsonp('err');
+    }  
 };
