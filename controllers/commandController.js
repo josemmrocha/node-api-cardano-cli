@@ -177,10 +177,13 @@ exports.buildTxMultipleInputs = function(req, res) {
 		var available = utxoInfo.available;
 		var utxo = utxoInfo.utxo;
 		var ix = utxoInfo.ix;
+		console.log('available: ' + available);
 		var input = `--tx-in ${utxo}#${ix} `;
 		totalIputs += input;
 		totalAvailable += available;
 	});
+
+	console.log('totalAvailable: ' + totalAvailable);
 
 	var path = usePath ? testNFTPath : '';
 	var sendToBuyerAddr = fee === 0 ? 0 : totalAvailable - fee;
