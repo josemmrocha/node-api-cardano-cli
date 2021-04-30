@@ -239,7 +239,7 @@ exports.sendAllUtxosToAddr = function(req, res) {
                 console.log('availableUtxos.count: ' + responseGetUtxos.length);
                 log.info('availableUtxos.count: ' + responseGetUtxos.length);
                 if (responseGetUtxos && responseGetUtxos.length > 0) { // TODO ojo, wuedan como available 0?
-                    var resquest = {
+                    var request = {
                         fee: 0,
                         paymentAddress: paymentAddress,
                         usePath: true,
@@ -249,19 +249,19 @@ exports.sendAllUtxosToAddr = function(req, res) {
                     console.log(`Going to send multiple inputs tx to ${paymentAddress}`);             
                     log.info(`Going to send multiple inputs tx to ${paymentAddress}`);             
 
-                    buildTxMultipleInputs(resquest).then(
+                    buildTxMultipleInputs(request).then(
                         (responseBuildRaw) => {
                             if (responseBuildRaw) {
                                 getFee(responseGetUtxos.length, 1, 1, true).then(
                                     (responseGetFee) => {
                                         if (responseGetFee && responseGetFee !== 0) {
-                                            var resquest = {
+                                            var request = {
                                                 fee: responseGetFee,
                                                 paymentAddress: paymentAddress,
                                                 usePath: true,
                                                 utxoInfoList: responseGetUtxos
                                             };
-                                            buildTxMultipleInputs(resquest).then(
+                                            buildTxMultipleInputs(request).then(
                                                 (responseBuildTx) => {
                                                     if (responseBuildTx) {
                                                         signTx(true).then(
@@ -400,7 +400,7 @@ async function buildTxMultipleInputs(request) {
     var url = `http://localhost:4200/api/buildTxMultipleInputs/`;
 
     try {
-        let res = await axios.post(url, JSON.parse(request));
+        let res = await axios.post(url, request);
         return res.data;
     } catch (error) {
         console.log('Error in buildTxMultipleInputs call: ' + error);
