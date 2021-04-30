@@ -1,5 +1,6 @@
 const https = require('https');
 var tools = require('./tools/tools');
+const constants = require('./constants/constants');
 var host = 'cardano-mainnet.blockfrost.io';
 var basePath = '/api/v0/';
 var blockFrostApiKey = 'xu1QHJibBBNHZX0VE3ITxDPaOGbki9Gu';
