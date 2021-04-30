@@ -3,6 +3,11 @@ var tools = require('./tools/tools');
 var host = 'cardano-mainnet.blockfrost.io';
 var basePath = '/api/v0/';
 var blockFrostApiKey = 'xu1QHJibBBNHZX0VE3ITxDPaOGbki9Gu';
+var opts = {
+    logFilePath: constants.testNFTPath + 'server.log',
+    timestampFormat:'YYYY-MM-DD HH:mm:ss.SSS'
+};
+const log = require('simple-node-logger').createSimpleLogger(opts);
 
 exports.getAddrUtxos = function(req, res) {
     var address = req.params.addr;
@@ -18,7 +23,7 @@ exports.getAddrUtxos = function(req, res) {
             res.status(200).jsonp(data);
         });
     }).on("error", (err) => {
-        console.log("Error: " + err.message);
+        log.error("Error: " + err.message);
         res.send(500, 'err');
     });
 };
@@ -37,7 +42,7 @@ exports.getTxUtxos = function(req, res) {
             res.status(200).jsonp(data);
         });
     }).on("error", (err) => {
-        console.log("Error: " + err.message);
+        log.error("Error: " + err.message);
         res.send(500, 'err');
     });
 };
@@ -56,7 +61,7 @@ exports.getAllTx = function(req, res) {
             res.status(200).jsonp(data);
         });
     }).on("error", (err) => {
-        console.log("Error: " + err.message);
+        log.error("Error: " + err.message);
         res.send(500, 'err');
     });
 };

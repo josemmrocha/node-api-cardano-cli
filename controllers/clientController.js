@@ -5,7 +5,7 @@ const { response } = require('express');
 const { createMetadataFile } = require('./commandController');
 var tools = require('./tools/tools');
 var opts = {
-    logFilePath: constants.testNFTPath + 'project.log',
+    logFilePath: constants.testNFTPath + 'client.log',
     timestampFormat:'YYYY-MM-DD HH:mm:ss.SSS'
 };
 const log = require('simple-node-logger').createSimpleLogger(opts);
