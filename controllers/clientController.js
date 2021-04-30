@@ -229,6 +229,95 @@ exports.getProcessedTx = function(req, res) {
     res.status(200).send('running');
 }
 
+exports.sendAllUtxosToAddr = function(req, res) {
+    var nftAddress = req.params.nftAddress;
+    var paymentAddress = req.params.paymentAddress;
+
+    getUtxos(nftAddress).then(
+        (responseGetUtxos) => {
+            if (responseGetUtxos && responseGetUtxos.length > 0) {
+                console.log('availableUtxos.count: ' + responseGetUtxos.length);
+                log.info('availableUtxos.count: ' + responseGetUtxos.length);
+                if (responseGetUtxos && responseGetUtxos.length > 0) { // TODO ojo, wuedan como available 0?
+                    var resquest = {
+                        fee: 0,
+                        paymentAddress: paymentAddress,
+                        usePath: true,
+                        utxoInfoList: responseGetUtxos
+                    };
+
+                    console.log(`Going to send multiple inputs tx to ${paymentAddress}`);             
+                    log.info(`Going to send multiple inputs tx to ${paymentAddress}`);             
+
+                    buildTxMultipleInputs(resquest).then(
+                        (responseBuildRaw) => {
+                            if (responseBuildRaw) {
+                                getFee(responseGetUtxos.length, 1, 1, true).then(
+                                    (responseGetFee) => {
+                                        if (responseGetFee && responseGetFee !== 0) {
+                                            var resquest = {
+                                                fee: responseGetFee,
+                                                paymentAddress: paymentAddress,
+                                                usePath: true,
+                                                utxoInfoList: responseGetUtxos
+                                            };
+                                            buildTxMultipleInputs(resquest).then(
+                                                (responseBuildTx) => {
+                                                    if (responseBuildTx) {
+                                                        signTx(true).then(
+                                                            (responseSignTx) => {
+                                                                if (responseSignTx) {
+                                                                    submitTx(true).then(
+                                                                        (responseSubmitTx) => {
+                                                                            if (responseSubmitTx) {
+                                                                                console.log('SUCCESS Sending Tx');
+                                                                                log.info('SUCCESS Sending Tx');
+                                                                            }
+                                                                        },
+                                                                        (errorSubmitTx) => {
+                                                                            console.log('Error Submitting Tx');
+                                                                            log.error('Error Submitting Tx');
+                                                                        }
+                                                                    );
+                                                                }
+                                                            },
+                                                            (errorSignTx) => {
+                                                                console.log('Error Signing Fee');
+                                                                log.error('Error Signing Fee');
+                                                            }
+                                                        );
+                                                    }
+                                                },
+                                                (errorBuildTx) => {
+                                                    console.log('Error Building Tx');
+                                                    log.error('Error Building Tx');
+                                                }
+                                            );
+                                        }
+                                    },
+                                    (errorGetFee) => {
+                                        console.log('Error Getting Fee');
+                                        log.error('Error Getting Fee');
+                                    }
+                                );
+                            }
+                        },
+                        (errorBuildRaw) => {
+                            console.log('Error Building Raw');
+                            log.error('Error Building Raw');
+                        }
+                    );
+                }
+            }
+        }, 
+        (errorGetUtxos) => {
+            console.log('Error Getting utxos');
+            log.error('Error Getting utxos');
+        });
+
+    res.status(200).send('running');
+}
+
 async function getUtxos(addr) {
     var url = `http://localhost:4200/api/utxos/${addr}`;
 
@@ -307,19 +396,18 @@ async function buildTxWithToken(fee, available, nftAddress, paymentAddress, poli
     }   
 }
 
-async function buildTxWithToken2(fee, paymentAddress, policy, utxo, ix, usePath, nftIdentifier) {
-    var url = `http://localhost:4200/api/buildTxWithToken2/${fee}/${paymentAddress}/${policy}/${utxo}/${ix}/${usePath}/${nftIdentifier}`;
+async function buildTxMultipleInputs(request) {
+    var url = `http://localhost:4200/api/buildTxMultipleInputs/`;
 
     try {
-        let res = await axios.get(url);
+        let res = await axios.post(url, JSON.parse(request));
         return res.data;
     } catch (error) {
-        console.log('Error in buildTxWithToken call: ' + error);
-        log.error('Error in buildTxWithToken call: ' + error);
+        console.log('Error in buildTxMultipleInputs call: ' + error);
+        log.error('Error in buildTxMultipleInputs call: ' + error);
         return undefined;
     }   
 }
-
 
 async function getFee(inTxCount, outTxCount, witnessCount, usePath) {
     var url = `http://localhost:4200/api/fee/${inTxCount}/${outTxCount}/${witnessCount}/${usePath}`;

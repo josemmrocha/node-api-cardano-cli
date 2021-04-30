@@ -163,37 +163,42 @@ exports.buildTxWithToken = function(req, res) {
 	});
 };
 
-exports.buildTxWithToken2 = function(req, res) {
-	var fee = req.params.fee;
-	var paymentAddress = req.params.paymentAddress;
-	var policy = req.params.policy;
-	var utxo = req.params.utxo;
-	var ix = req.params.ix;
-	var usePath = req.params.usePath;
-	var nftIdentifier = req.params.nftIdentifier;
+exports.buildTxMultipleInputs = function(req, res) {
+	var resquest = req.body;
+	var fee = resquest.fee;
+	var paymentAddress = resquest.paymentAddress;
+	var usePath = resquest.usePath;
+	var utxoInfoList = resquest.utxoInfoList;
 
-	console.log('GET /buildTxWithToken2/');
+	var totalAvailable = 0;
+	var totalIputs = '';
 
+	utxoInfoList.forEach(utxoInfo => {
+		var available = utxoInfo.available;
+		var utxo = utxoInfo.utxo;
+		var ix = utxoInfo.ix;
+		var input = `--tx-in ${utxo}#${ix} `;
+		totalIputs += input;
+		totalAvailable += available;
+	});
+
+	totalIputs += ` \ `;		
 	var path = usePath ? testNFTPath : '';
-	var transactionAmount = adaWithToken;
-	var sendToBuyerAddr = fee === 0 ? 0 : transactionAmount;
+	var sendToBuyerAddr = fee === 0 ? 0 : totalAvailable - fee;
 
-	var command = `cardano-cli transaction build-raw \
+	exec(`cardano-cli transaction build-raw \
 	--mary-era \
 	--fee ${fee} \
-	--tx-in ${utxo}#${ix} \
-	--tx-out ${paymentAddress}+${sendToBuyerAddr}+"1 ${policy}.${nftIdentifier}" \
-	--out-file ${path}matx.raw`;
-
-	console.log('Command: ' + command);
-
-	exec(command, (err, stdout, stderr) => {
+	${totalIputs}
+	--tx-out ${paymentAddress}+${sendToBuyerAddr}\
+	--out-file ${path}matx.raw`, (err, stdout, stderr) => {
 		if (err || stderr) {
 			console.log(`err: ${err}`);
 			console.log(`stderr: ${stderr}`);
 			res.status(500).jsonp(false);
   		} else {
 			console.log(`stdout: ${stdout}`);
+			console.log('GET /buildTx/' + req.params.fee + '/' + req.params.available);
 			res.status(200).jsonp(true);
 		}
 	});
@@ -220,7 +225,6 @@ exports.getLastUtxo = function(req, res) {
 		}
 	});
 };
-
 
 exports.getFee = function(req, res) {
 	console.log('GET /fee');

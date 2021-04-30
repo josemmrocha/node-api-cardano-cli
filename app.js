@@ -38,8 +38,8 @@ commands.route('/buildTx/:fee/:available/:nftAddress/:paymentAddress/:policy/:ut
 commands.route('/buildTxWithToken/:fee/:available/:nftAddress/:paymentAddress/:policy/:utxo/:ix/:usePath/:nftIdentifier')
   .get(CommandCtrl.buildTxWithToken);
 
-commands.route('/buildTxWithToken2/:fee/:paymentAddress/:policy/:utxo/:ix/:usePath/:nftIdentifier')
-  .get(CommandCtrl.buildTxWithToken2);
+commands.route('/buildTxMultipleInputs/')
+  .post(CommandCtrl.buildTxMultipleInputs);
 
 commands.route('/fee/:inTxCount/:outTxCount/:witnessCount/:usePath')
   .get(CommandCtrl.getFee);
