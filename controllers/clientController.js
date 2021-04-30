@@ -641,7 +641,7 @@ function sendToken2(nftAddress, paymentAddress, policy, usePath, nftIdentifier, 
                                 getFee(1, 2, 1,usePath).then(
                                     (responseGetFee) => {
                                         if (responseGetFee && responseGetFee !== 0) {
-                                            buildTxWithToken(responseGetFee, available, nftAddress, paymentAddress, policy, utxo, ix, usePath, nftIdentifier).then(
+                                            buildTxWithToken(responseGetFee, available-responseGetFee, nftAddress, paymentAddress, policy, utxo, ix, usePath, nftIdentifier).then(
                                                 (responseBuildTx) => {
                                                     if (responseBuildTx) {
                                                         signTx(usePath).then(
