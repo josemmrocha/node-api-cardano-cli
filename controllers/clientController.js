@@ -512,7 +512,7 @@ function mintandSendToken(available, addressForNft, paymentAddress, policy, utxo
                                                                             con.query(updateQuery, function (err, result) {
                                                                                 if (err) throw err;
                                                                                 console.log(result.affectedRows + " record(s) updated (TestNft)");
-                                                                                sendToken2(addressForNft, paymentAddress, policy, usePath, nftIdentifier, txHash);
+                                                                                sendToken2(addressForNft, paymentAddress, policy, usePath, nftIdentifier, txHash, responseGetFee);
                                                                                 // setTimeout(function () {
                                                                                 //     sendToken(addressForNft, paymentAddress, policy, usePath, nftIdentifier, txHash);   
                                                                                 // }, 40000);
@@ -627,13 +627,13 @@ function sendToken(nftAddress, paymentAddress, policy, usePath, nftIdentifier, t
     });
 }
 
-function sendToken2(nftAddress, paymentAddress, policy, usePath, nftIdentifier, txHash) {
+function sendToken2(nftAddress, paymentAddress, policy, usePath, nftIdentifier, txHash, mintTokenFee) {
     getLastUtxo(usePath).then(
         (responseGetLastUtxo) => {
             if (responseGetLastUtxo) {          
                     var ix = 0;
                     var utxo = responseGetLastUtxo;
-                    var available = constants.nftPrice;
+                    var available = constants.nftPrice - mintTokenFee;
                     console.log(`Going to send token. NftAddress: ${nftAddress}. PaymentAddress: ${paymentAddress}. Available: ${available}. Policy: ${policy}.  Utxo: ${utxo}.  ix: ${ix}. UsePath: ${usePath}. NftIdentifier: ${nftIdentifier}`);             
                     buildTxWithToken(0, available, nftAddress, paymentAddress, policy, utxo, ix, usePath, nftIdentifier).then(
                         (responseBuildRaw) => {
@@ -641,7 +641,7 @@ function sendToken2(nftAddress, paymentAddress, policy, usePath, nftIdentifier, 
                                 getFee(1, 2, 1,usePath).then(
                                     (responseGetFee) => {
                                         if (responseGetFee && responseGetFee !== 0) {
-                                            buildTxWithToken(responseGetFee, available-responseGetFee, nftAddress, paymentAddress, policy, utxo, ix, usePath, nftIdentifier).then(
+                                            buildTxWithToken(responseGetFee, available, nftAddress, paymentAddress, policy, utxo, ix, usePath, nftIdentifier).then(
                                                 (responseBuildTx) => {
                                                     if (responseBuildTx) {
                                                         signTx(usePath).then(
