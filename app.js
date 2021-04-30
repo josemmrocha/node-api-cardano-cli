@@ -38,6 +38,9 @@ commands.route('/buildTx/:fee/:available/:nftAddress/:paymentAddress/:policy/:ut
 commands.route('/buildTxWithToken/:fee/:available/:nftAddress/:paymentAddress/:policy/:utxo/:ix/:usePath/:nftIdentifier')
   .get(CommandCtrl.buildTxWithToken);
 
+commands.route('/buildTxWithToken2/:fee/:paymentAddress/:policy/:utxo/:ix/:usePath/:nftIdentifier')
+  .get(CommandCtrl.buildTxWithToken2);
+
 commands.route('/fee/:inTxCount/:outTxCount/:witnessCount/:usePath')
   .get(CommandCtrl.getFee);
 
@@ -49,6 +52,9 @@ commands.route('/signTxMint/:usePath')
 
 commands.route('/submitTx/:usePath')
   .get(CommandCtrl.submitTx);
+
+commands.route('/getLastUtxo/:usePath')
+  .get(CommandCtrl.getLastUtxo);
 
 commands.route('/createMetadataFile/:usePath')
   .post(CommandCtrl.createMetadataFile);

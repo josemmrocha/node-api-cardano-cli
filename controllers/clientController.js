@@ -283,6 +283,19 @@ async function buildTxWithToken(fee, available, nftAddress, paymentAddress, poli
     }   
 }
 
+async function buildTxWithToken2(fee, paymentAddress, policy, utxo, ix, usePath, nftIdentifier) {
+    var url = `http://localhost:4200/api/buildTxWithToken/${fee}/${paymentAddress}/${policy}/${utxo}/${ix}/${usePath}/${nftIdentifier}`;
+
+    try {
+        let res = await axios.get(url);
+        return res.data;
+    } catch (error) {
+        console.log('Error in buildTxWithToken call: ' + error);
+        return undefined;
+    }   
+}
+
+
 async function getFee(inTxCount, outTxCount, witnessCount, usePath) {
     var url = `http://localhost:4200/api/fee/${inTxCount}/${outTxCount}/${witnessCount}/${usePath}`;
 
@@ -339,6 +352,18 @@ async function createmetadataFile(jsonstr, usePath) {
         return res.data;
     } catch (error) {
         console.log('Error in createmetadataFile call: ' + error);
+        return undefined;
+    }   
+}
+
+async function getLastUtxo(usePath) {
+    var url = `http://localhost:4200/api/getLastUtxo/${usePath}`;
+
+    try {
+        let res = await axios.post(url, JSON.parse(jsonstr));
+        return res.data;
+    } catch (error) {
+        console.log('Error in getLastUtxo call: ' + error);
         return undefined;
     }   
 }
@@ -482,9 +507,10 @@ function mintandSendToken(available, addressForNft, paymentAddress, policy, utxo
                                                                             con.query(updateQuery, function (err, result) {
                                                                                 if (err) throw err;
                                                                                 console.log(result.affectedRows + " record(s) updated (TestNft)");
-                                                                                setTimeout(function () {
-                                                                                    sendToken(addressForNft, paymentAddress, policy, usePath, nftIdentifier, txHash);   
-                                                                                }, 40000);
+                                                                                sendToken2(addressForNft, paymentAddress, policy, usePath, nftIdentifier, txHash);
+                                                                                // setTimeout(function () {
+                                                                                //     sendToken(addressForNft, paymentAddress, policy, usePath, nftIdentifier, txHash);   
+                                                                                // }, 40000);
                                                                             });
                                                                         }
                                                                     },
@@ -595,6 +621,55 @@ function sendToken(nftAddress, paymentAddress, policy, usePath, nftIdentifier, t
             res.status(500).send('err');
     });
 }
+
+function sendToken2(nftAddress, paymentAddress, policy, usePath, nftIdentifier, txHash) {
+    getLastUtxo(usePath).then(
+        (responseGetLastUtxo) => {
+            if (responseGetLastUtxo) {          
+                    var ix = 0;
+                    var utxo = responseGetLastUtxo;
+                    console.log(`Going to send token. NftAddress: ${nftAddress}. PaymentAddress: ${paymentAddress}. Available: ${available}. Policy: ${policy}.  Utxo: ${utxo}.  ix: ${ix}. UsePath: ${usePath}. NftIdentifier: ${nftIdentifier}`);             
+                    buildTxWithToken2(0, paymentAddress, policy, utxo, ix, usePath, nftIdentifier).then(
+                        (responseBuildRaw) => {
+                            if (responseBuildRaw) {
+                                signTx(usePath).then(
+                                    (responseSignTx) => {
+                                        if (responseSignTx) {
+                                            submitTx(usePath).then(
+                                                (responseSubmitTx) => {
+                                                    if (responseSubmitTx) {
+                                                        console.log('SUCCESS Sending Tx');
+
+                                                        con.query(`UPDATE TestNft SET addressSent = true WHERE identifier = '${nftIdentifier}';`, function (err, result) {
+                                                            if (err) throw err;
+                                                            console.log(result.affectedRows + " record(s) updated (TestNft)");
+                                                        });
+                                                    }
+                                                },
+                                                (errorSubmitTx) => {
+                                                    console.log('Error Submitting Tx');
+                                                }
+                                            );
+                                        }
+                                    },
+                                    (errorSignTx) => {
+                                        console.log('Error Signing Fee');
+                                    }
+                                );
+                            }
+                        },
+                        (errorBuildRaw) => {
+                            console.log('Error Building Raw');
+                        }
+                    );
+                
+            }
+        }, 
+        (errorGetLastUtxo) => {
+            console.log('Error getiing last utxo Raw');
+    });
+}
+
 
 function getMintMetadata(policyId, publisher, nftIdentifier, name, imagePath, location) {
     var str = `{"721":{"${policyId}":{"publisher":"${publisher}","${nftIdentifier}":{"name":"${name}","image":"${imagePath}","location":"${location}"}}}}`;

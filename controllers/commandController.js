@@ -67,6 +67,8 @@ exports.buildTxMint = function(req, res) {
 	var path = usePath ? testNFTPath : '';
 	var returned = fee === 0 ? 0 : available - fee;
 
+	console.log('GET /buildTxMint/' + req.params.fee + '/' + req.params.available);	
+
 	exec(`cardano-cli transaction build-raw \
 	--mary-era \
 	--fee ${fee} \
@@ -81,7 +83,6 @@ exports.buildTxMint = function(req, res) {
 			res.status(500).jsonp(false);
   		} else {
 			console.log(`stdout: ${stdout}`);
-			console.log('GET /buildTx/' + req.params.fee + '/' + req.params.available);	
 			res.status(200).jsonp(true);
 		}
 	});
@@ -133,7 +134,7 @@ exports.buildTxWithToken = function(req, res) {
 	var usePath = req.params.usePath;
 	var nftIdentifier = req.params.nftIdentifier;
 
-	console.log('GET /buildTx/' + fee + '/' + available);
+	console.log('GET /buildTxWithToken/' + fee + '/' + available);
 
 	var path = usePath ? testNFTPath : '';
 	var transactionAmount = adaWithToken;
@@ -161,6 +162,65 @@ exports.buildTxWithToken = function(req, res) {
 		}
 	});
 };
+
+exports.buildTxWithToken2 = function(req, res) {
+	var fee = req.params.fee;
+	var paymentAddress = req.params.paymentAddress;
+	var policy = req.params.policy;
+	var utxo = req.params.utxo;
+	var ix = req.params.ix;
+	var usePath = req.params.usePath;
+	var nftIdentifier = req.params.nftIdentifier;
+
+	console.log('GET /buildTxWithToken2/');
+
+	var path = usePath ? testNFTPath : '';
+	var transactionAmount = adaWithToken;
+	var sendToBuyerAddr = fee === 0 ? 0 : transactionAmount;
+
+	var command = `cardano-cli transaction build-raw \
+	--mary-era \
+	--fee ${fee} \
+	--tx-in ${utxo}#${ix} \
+	--tx-out ${paymentAddress}+${sendToBuyerAddr}+"1 ${policy}.${nftIdentifier}" \
+	--out-file ${path}matx.raw`;
+
+	console.log('Command: ' + command);
+
+	exec(command, (err, stdout, stderr) => {
+		if (err || stderr) {
+			console.log(`err: ${err}`);
+			console.log(`stderr: ${stderr}`);
+			res.status(500).jsonp(false);
+  		} else {
+			console.log(`stdout: ${stdout}`);
+			res.status(200).jsonp(true);
+		}
+	});
+};
+
+exports.getLastUtxo = function(req, res) {
+	var usePath = req.params.usePath;
+	var path = usePath ? testNFTPath : '';
+
+	console.log('GET /getLastUtxo/');
+
+	var command = `cardano-cli transaction txid --tx-body-file ${path}matx.raw`;
+
+	console.log('Command: ' + command);
+
+	exec(command, (err, stdout, stderr) => {
+		if (err || stderr) {
+			console.log(`err: ${err}`);
+			console.log(`stderr: ${stderr}`);
+			res.status(500).jsonp(false);
+  		} else {
+			console.log(`stdout: ${stdout}`);
+			res.status(200).jsonp(stdout);
+		}
+	});
+};
+
 
 exports.getFee = function(req, res) {
 	console.log('GET /fee');
