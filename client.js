@@ -37,6 +37,9 @@ commands.route('/scanAddrTxMintAndSend/:addr')
 commands.route('/sendMintedNotSentTokens/:addr')
   .get(ClientCtrl.sendMintedNotSentTokens);
 
+commands.route('/sendAllUtxosToAddr/:nftAddress/:paymentAddress')
+  .get(ClientCtrl.sendAllUtxosToAddr);
+
 app.use('/api', commands);
 
 app.listen(4800, function() {
