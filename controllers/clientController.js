@@ -30,7 +30,6 @@ exports.scanAndSend = function(req, res) {
         (responseGetUtxos) => {
             if (responseGetUtxos) {
                 responseGetUtxos.forEach(element => {
-                    console.log(`Getting inputs for hash: ${element.utxo}`);
                     log.info(`Getting inputs for hash: ${element.utxo}`);
 
                     getOuputsFromUtxo(element.utxo).then(
@@ -64,12 +63,10 @@ exports.scanAddrTxAndSend = function(req, res) {
         (responseGetAllTx) => {
             if (responseGetAllTx) {
                 var allTxs = JSON.parse(responseGetAllTx);
-                console.log(`There are ${allTxs.length} txs in this address`);
                 log.info(`There are ${allTxs.length} txs in this address`);
 
                 if (allTxs && allTxs.length > 0) {
                     allTxs.forEach(tx => {
-                        console.log(`Getting utxos for tx: ${tx}`);
                         log.info(`Getting utxos for tx: ${tx}`);
                         getOuputsFromUtxo(tx).then(
                             (responseGetOuputsFromUtxo) => {
@@ -80,7 +77,6 @@ exports.scanAddrTxAndSend = function(req, res) {
                                         (responseGetUtxos) => {
                                             if (responseGetUtxos && responseGetUtxos.length > 0) {
                                                 var availableUtxos = responseGetUtxos.filter(x => x.available > minAvailableQtyInUtxo); 
-                                                console.log('availableUtxos.count: ' + availableUtxos.length);
                                                 log.info('availableUtxos.count: ' + availableUtxos.length);
                                                 if (availableUtxos && availableUtxos.length > 0) {
                                                     createAndSendTx(availableUtxos[0].available, address, addressToSend, 
@@ -118,18 +114,15 @@ exports.scanAddrTxMintAndSend = function(req, res) {
         (responseGetAllTx) => {
             if (responseGetAllTx) {
                 var allTxs = JSON.parse(responseGetAllTx);
-                console.log(`There are ${allTxs.length} txs in this address`);
                 log.info(`There are ${allTxs.length} txs in this address`);
 
                 if (allTxs && allTxs.length > 0) {
                     con.query('SELECT txHash FROM ProcessedTx;', function (err, rows, fields) {
                         if (err) throw err;
                         var nonProcessedTx = allTxs.filter(x => !rows.includes(x));
-                        console.log('Non processed txs: ' + nonProcessedTx.length);
                         log.info('Non processed txs: ' + nonProcessedTx.length);
                         if (nonProcessedTx.length > 0) {
                             var tx = nonProcessedTx[0];                      
-                            console.log(`Getting utxos for tx: ${tx}`);
                             log.info(`Getting utxos for tx: ${tx}`);
                             getOuputsFromUtxo(tx).then(
                                 (responseGetOuputsFromUtxo) => {
@@ -140,7 +133,6 @@ exports.scanAddrTxMintAndSend = function(req, res) {
                                             (responseGetUtxos) => {
                                                 if (responseGetUtxos && responseGetUtxos.length > 0) {
                                                     var availableUtxos = responseGetUtxos.filter(x => x.available > minAvailableQtyInUtxo);
-                                                    console.log('availableUtxos.count: ' + availableUtxos.length);
                                                     log.info('availableUtxos.count: ' + availableUtxos.length);
                                                     // TODO aqui coger no la primera, sino la que de verdad tiene el token.
                                                     if (availableUtxos && availableUtxos.length > 0) {
@@ -148,28 +140,26 @@ exports.scanAddrTxMintAndSend = function(req, res) {
                                                             policyIdTestNFT, availableUtxos[0].utxo, availableUtxos[0].ix, true, tx);
                                                     }
                                                 } else {
-                                                        res.status(500).send('err');
+                                                    log.info('There are no utxos');
                                                 }
                                             }, 
                                             (errorGetUtxos) => {
-                                                res.status(500).send('err');
-                                        });
+                                                log.error(`Error errorGetUtxos: ` + errorGetUtxos);
+                                            });
                                     }
                                 },
                                 (errorGetOuputsFromUtxo) => {
-                                     res.status(500).send('err');
+                                    log.error(`Error errorGetOuputsFromUtxo: ` + errorGetOuputsFromUtxo);
                                 }
                             );
                         }
                     });
                 }      
             } else {
-                console.log(`There are no tx.`);
                 log.info(`There are no tx.`);
             }
         }, 
         (errorGetAllTx) => {
-            console.log(`Error errorGetAllTx: ` + errorGetAllTx);
             log.error(`Error errorGetAllTx: ` + errorGetAllTx);
     });
 };
@@ -180,7 +170,6 @@ exports.sendMintedNotSentTokens = function(req, res) {
 
     con.query('SELECT * FROM TestNft Where minted = 1 and addressSent = 0;', function (err, rows, fields) {
         if (err) throw err;
-        console.log(`Found ${rows.length} minted not sent token.`);     
         log.info(`Found ${rows.length} minted not sent token.`);                 
         if (rows && rows.length > 0) {
             sendToken(address, rows[0].paymentAddress, policyIdTestNFT, true, rows[0].identifier, rows[0].txHash);
@@ -191,23 +180,16 @@ exports.sendMintedNotSentTokens = function(req, res) {
 exports.getProcessedTx = function(req, res) {
     con.query('SELECT * FROM ProcessedTx;', function (err, rows, fields) {
         if (err) throw err;
-        console.log('PROCESSED RESULT');
-        console.log(rows);
     });
 
     con.query('SELECT * FROM TestNft;', function (err, rows, fields) {
         if (err) throw err;
-        console.log('TestNft RESULT');
-        console.log(rows);
         var nonProcessedNfts = rows.filter(x => x.minted !== true);
         var randomNftFromNonProcessed = nonProcessedNfts[Math.floor(Math.random() * nonProcessedNfts.length)];
-        console.log('Random TestNft');
-        console.log(randomNftFromNonProcessed.name);
 
         var txHash = 'test';
         con.query(`INSERT INTO ProcessedTx (txHash) VALUES ('${txHash}');`, function (err, rows, fields) {
             if (err) throw err;
-            console.log('Inserted ProcessedTx: ' + txHash);
         });
     });
 
@@ -216,14 +198,12 @@ exports.getProcessedTx = function(req, res) {
     var nftName = 'NFTest01';
     con.query(`UPDATE TestNft SET minted = true WHERE name = '${nftName}';`, function (err, result) {
         if (err) throw err;
-        console.log(result.affectedRows + " record(s) updated");
     });
 
     var nftName = 'NFTest01';
     var addressSent = 'afadf';
     con.query(`UPDATE TestNft SET addressSent = '${addressSent}' WHERE name = '${nftName}';`, function (err, result) {
         if (err) throw err;
-        console.log(result.affectedRows + " record(s) updated");
     });
 
     res.status(200).send('running');
@@ -236,7 +216,6 @@ exports.sendAllUtxosToAddr = function(req, res) {
     getUtxos(nftAddress).then(
         (responseGetUtxos) => {
             if (responseGetUtxos && responseGetUtxos.length > 0) {
-                console.log('availableUtxos.count: ' + responseGetUtxos.length);
                 log.info('availableUtxos.count: ' + responseGetUtxos.length);
                 if (responseGetUtxos && responseGetUtxos.length > 0) { // TODO ojo, wuedan como available 0?
                     var request = {
@@ -246,7 +225,6 @@ exports.sendAllUtxosToAddr = function(req, res) {
                         utxoInfoList: responseGetUtxos
                     };
 
-                    console.log(`Going to send multiple inputs tx to ${paymentAddress}`);             
                     log.info(`Going to send multiple inputs tx to ${paymentAddress}`);             
 
                     buildTxMultipleInputs(request).then(
@@ -270,48 +248,43 @@ exports.sendAllUtxosToAddr = function(req, res) {
                                                                     submitTx(true).then(
                                                                         (responseSubmitTx) => {
                                                                             if (responseSubmitTx) {
-                                                                                console.log('SUCCESS Sending Tx');
                                                                                 log.info('SUCCESS Sending Tx');
                                                                             }
                                                                         },
                                                                         (errorSubmitTx) => {
-                                                                            console.log('Error Submitting Tx');
                                                                             log.error('Error Submitting Tx');
                                                                         }
                                                                     );
                                                                 }
                                                             },
                                                             (errorSignTx) => {
-                                                                console.log('Error Signing Fee');
                                                                 log.error('Error Signing Fee');
                                                             }
                                                         );
                                                     }
                                                 },
                                                 (errorBuildTx) => {
-                                                    console.log('Error Building Tx');
                                                     log.error('Error Building Tx');
                                                 }
                                             );
                                         }
                                     },
                                     (errorGetFee) => {
-                                        console.log('Error Getting Fee');
                                         log.error('Error Getting Fee');
                                     }
                                 );
                             }
                         },
                         (errorBuildRaw) => {
-                            console.log('Error Building Raw');
                             log.error('Error Building Raw');
                         }
                     );
                 }
+            } else {
+                log.info('There are no utxos');
             }
         }, 
         (errorGetUtxos) => {
-            console.log('Error Getting utxos');
             log.error('Error Getting utxos');
         });
 
@@ -325,7 +298,6 @@ async function getUtxos(addr) {
         let res = await axios.get(url);
         return res.data;
     } catch (error) {
-        console.log('Error in getUtxos call: ' + error);
         log.error('Error in getUtxos call: ' + error);
         return undefined;
     }   
@@ -338,7 +310,6 @@ async function getAllTx(addr) {
         let res = await axios.get(url);
         return res.data;
     } catch (error) {
-        console.log('Error in getAllTx call: ' + error);
         log.error('Error in getAllTx call: ' + error);
         return undefined;
     }   
@@ -351,7 +322,6 @@ async function getOuputsFromUtxo(txHash) {
         let res = await axios.get(url);
         return res.data;
     } catch (error) {
-        console.log('Error in getOuputsFromUtxo call: ' + error);
         log.error('Error in getOuputsFromUtxo call: ' + error);
         return undefined;
     }   
@@ -364,7 +334,6 @@ async function buildTx(fee, available, nftAddress, paymentAddress, policy, utxo,
         let res = await axios.get(url);
         return res.data;
     } catch (error) {
-        console.log('Error in buildTx call: ' + error);
         log.error('Error in buildTx call: ' + error);
         return undefined;
     }   
@@ -377,7 +346,6 @@ async function buildTxMint(fee, available, address, policy, utxo, ix, usePath, n
         let res = await axios.get(url);
         return res.data;
     } catch (error) {
-        console.log('Error in buildTxMint call: ' + error);
         log.error('Error in buildTxMint call: ' + error);
         return undefined;
     }   
@@ -390,7 +358,6 @@ async function buildTxWithToken(fee, available, nftAddress, paymentAddress, poli
         let res = await axios.get(url);
         return res.data;
     } catch (error) {
-        console.log('Error in buildTxWithToken call: ' + error);
         log.error('Error in buildTxWithToken call: ' + error);
         return undefined;
     }   
@@ -403,7 +370,6 @@ async function buildTxMultipleInputs(request) {
         let res = await axios.post(url, request);
         return res.data;
     } catch (error) {
-        console.log('Error in buildTxMultipleInputs call: ' + error);
         log.error('Error in buildTxMultipleInputs call: ' + error);
         return undefined;
     }   
@@ -416,7 +382,6 @@ async function getFee(inTxCount, outTxCount, witnessCount, usePath) {
         let res = await axios.get(url);
         return res.data;
     } catch (error) {
-        console.log('Error in getFee call: ' + error);
         log.error('Error in getFee call: ' + error);
         return undefined;
     }   
@@ -429,7 +394,6 @@ async function signTx(usePath) {
         let res = await axios.get(url);
         return res.data;
     } catch (error) {
-        console.log('Error in signTx call: ' + error);
         log.error('Error in signTx call: ' + error);
         return undefined;
     }   
@@ -442,7 +406,6 @@ async function signTxMint(usePath) {
         let res = await axios.get(url);
         return res.data;
     } catch (error) {
-        console.log('Error in signTxMint call: ' + error);
         log.error('Error in signTxMint call: ' + error);
         return undefined;
     }   
@@ -455,7 +418,6 @@ async function submitTx(usePath) {
         let res = await axios.get(url);
         return res.data;
     } catch (error) {
-        console.log('Error in submitTx call: ' + error);
         log.error('Error in submitTx call: ' + error);
         return undefined;
     }   
@@ -468,7 +430,6 @@ async function createmetadataFile(jsonstr, usePath) {
         let res = await axios.post(url, JSON.parse(jsonstr));
         return res.data;
     } catch (error) {
-        console.log('Error in createmetadataFile call: ' + error);
         log.error('Error in createmetadataFile call: ' + error);
         return undefined;
     }   
@@ -481,7 +442,6 @@ async function getLastUtxo(usePath) {
         let res = await axios.get(url);
         return res.data ? res.data.trim() : '';
     } catch (error) {
-        console.log('Error in getLastUtxo call: ' + error);
         log.error('Error in getLastUtxo call: ' + error);
         return undefined;
     }   
@@ -509,7 +469,6 @@ function getEntrantAddress(myAddr, responseGetOuputsFromUtxos) {
                     if (output.address !== myAddr && !sentAdaToAddr) {
                         output.amount.forEach(element => {
                             if (element.quantity >= nftPrice && element.unit === 'lovelace' && !sentAdaToAddr) {
-                                console.log('Addr: ' + output.address + '. Qty: ' + element.quantity);
                                 log.info('Addr: ' + output.address + '. Qty: ' + element.quantity);
                                 sentAdaToAddr = output.address;
                             }
@@ -520,7 +479,6 @@ function getEntrantAddress(myAddr, responseGetOuputsFromUtxos) {
             }
         }
     } catch(error) {
-        console.log('Error getEntrantAddress: ' + error);
         log.error('Error getEntrantAddress: ' + error);
     }
     
@@ -528,8 +486,6 @@ function getEntrantAddress(myAddr, responseGetOuputsFromUtxos) {
 }
 
 function createAndSendTx(available, nftAddress, paymentAddress, policy, utxo, ix, usePath) {
-    console.log(`Going to create and sent Tx. NftAddress: ${nftAddress}. PaymentAddress: ${paymentAddress}.  
-        Available: ${available}. Policy: ${policy}.  Utxo: ${utxo}.  ix: ${ix}. UsePath: ${usePath}`);
     log.info(`Going to create and sent Tx. NftAddress: ${nftAddress}. PaymentAddress: ${paymentAddress}.  
         Available: ${available}. Policy: ${policy}.  Utxo: ${utxo}.  ix: ${ix}. UsePath: ${usePath}`);
 
@@ -548,40 +504,34 @@ function createAndSendTx(available, nftAddress, paymentAddress, policy, utxo, ix
                                                     submitTx(usePath).then(
                                                         (responseSubmitTx) => {
                                                             if (responseSubmitTx) {
-                                                                console.log('SUCCESS SUbmitting Tx');
                                                                 log.info('SUCCESS SUbmitting Tx');
                                                             }
                                                         },
                                                         (errorSubmitTx) => {
-                                                            console.log('Error Submitting Tx');
                                                             log.error('Error Submitting Tx');
                                                         }
                                                     );
                                                 }
                                             },
                                             (errorSignTx) => {
-                                                console.log('Error Signing Fee');
                                                 log.error('Error Signing Fee');
                                             }
                                         );
                                     }
                                 },
                                 (errorBuildTx) => {
-                                    console.log('Error Building Tx');
                                     log.error('Error Building Tx');
                                 }
                             );
                         }
                     },
                     (errorGetFee) => {
-                        console.log('Error Getting Fee');
                         log.error('Error Getting Fee');
                     }
                 );
             }
         },
         (errorBuildRaw) => {
-            console.log('Error Building Raw');
             log.error('Error Building Raw');
         }
     );
@@ -591,16 +541,13 @@ function selectTokenMintAndSend(available, addressForNft, paymentAddress, policy
     con.query('SELECT * FROM TestNft Where minted = 0;', function (err, rows, fields) {
         if (err) throw err;
         var nonProcessedNfts = rows;
-        console.log('NonProcessedNfts: ' + nonProcessedNfts.length);
         log.info('NonProcessedNfts: ' + nonProcessedNfts.length);
 
         if (nonProcessedNfts.length === 0) {
             // TODO aqui meter logica para que devuelva si ya no hay tokens.
-            console.log('No more Tokens. NEEDED REFUND to Address: ' + paymentAddress);
             log.info('No more Tokens. NEEDED REFUND to Address: ' + paymentAddress);
         } else {
             var randomNftFromNonProcessed = nonProcessedNfts.length === 1 ? nonProcessedNfts[0] : nonProcessedNfts[Math.floor(Math.random() * nonProcessedNfts.length)];
-            console.log('Random TestNft Selected. Identifier: ' + randomNftFromNonProcessed.identifier);
             log.info('Random TestNft Selected. Identifier: ' + randomNftFromNonProcessed.identifier);
 
             mintandSendToken(available, addressForNft, paymentAddress, policy, utxo, ix, usePath,
@@ -611,11 +558,9 @@ function selectTokenMintAndSend(available, addressForNft, paymentAddress, policy
 }
 
 function mintandSendToken(available, addressForNft, paymentAddress, policy, utxo, ix, usePath, nftIdentifier, name, imagePath, location, txHash) {
-    console.log(`Going to mint token. Address: ${addressForNft}. Available: ${available}. Policy: ${policy}.  Utxo: ${utxo}.  ix: ${ix}. UsePath: ${usePath}. NftIdentifier: ${nftIdentifier}.`);
     log.info(`Going to mint token. Address: ${addressForNft}. Available: ${available}. Policy: ${policy}.  Utxo: ${utxo}.  ix: ${ix}. UsePath: ${usePath}. NftIdentifier: ${nftIdentifier}.`);
 
     var metadata = getMintMetadata(policy, publisherName, nftIdentifier, name, imagePath, location);
-    console.log('Metadata: ' + metadata);
     log.info('Metadata: ' + metadata);
 
     createmetadataFile(metadata, usePath).then(
@@ -636,19 +581,15 @@ function mintandSendToken(available, addressForNft, paymentAddress, policy, utxo
                                                                 submitTx(usePath).then(
                                                                     (responseSubmitTx) => {
                                                                         if (responseSubmitTx) {
-                                                                            console.log('SUCCESS Minting TOKEN');
                                                                             log.info('SUCCESS Minting TOKEN');
                                                                             con.query(`INSERT INTO ProcessedTx (txHash) VALUES ('${txHash}');`, function (err, rows, fields) {
                                                                                 if (err) throw err;
-                                                                                console.log('Inserted ProcessedTx: ' + txHash);
                                                                                 log.info('Inserted ProcessedTx: ' + txHash);
                                                                             });
                                                                             const updateQuery = `UPDATE TestNft SET minted = true, paymentAddress = '${paymentAddress}', txHash = '${txHash}' WHERE identifier = '${nftIdentifier}';`;
-                                                                            console.log('Update query' + updateQuery);
                                                                             log.info('Update query' + updateQuery);
                                                                             con.query(updateQuery, function (err, result) {
                                                                                 if (err) throw err;
-                                                                                console.log(result.affectedRows + " record(s) updated (TestNft)");
                                                                                 log.info(result.affectedRows + " record(s) updated (TestNft)");
                                                                                 sendToken2(available, addressForNft, paymentAddress, policy, usePath, nftIdentifier, txHash, responseGetFee);
                                                                                 // setTimeout(function () {
@@ -658,42 +599,36 @@ function mintandSendToken(available, addressForNft, paymentAddress, policy, utxo
                                                                         }
                                                                     },
                                                                     (errorSubmitTx) => {
-                                                                        console.log('Error Submitting Tx');
                                                                         log.error('Error Submitting Tx');
                                                                     }
                                                                 );
                                                             }
                                                         },
                                                         (errorSignTx) => {
-                                                            console.log('Error Signing Fee');
                                                             log.error('Error Signing Fee');
                                                         }
                                                     );
                                                 }
                                             },
                                             (errorBuildTx) => {
-                                                console.log('Error Building Tx');
                                                 log.error('Error Building Tx');
                                             }
                                         );
                                     }
                                 },
                                 (errorGetFee) => {
-                                    console.log('Error Getting Fee');
                                     log.error('Error Getting Fee');
                                 }
                             );
                         }
                     },
                     (errorBuildRaw) => {
-                        console.log('Error Building Raw');
                         log.error('Error Building Raw');
                     }
                 );
             }
         },
         (createMetadataFileError) => {
-            console.log('Error creating metadata file');
             log.error('Error creating metadata file');
         }
     );
@@ -704,13 +639,11 @@ function sendToken(nftAddress, paymentAddress, policy, usePath, nftIdentifier, t
         (responseGetUtxos) => {
             if (responseGetUtxos && responseGetUtxos.length > 0) {
                 var availableUtxos = responseGetUtxos.filter(x => x.available > minAvailableQtyInUtxo); //TODO add && contains token
-                console.log('availableUtxos.count: ' + availableUtxos.length);
                 log.info('availableUtxos.count: ' + availableUtxos.length);
                 if (availableUtxos && availableUtxos.length > 0) {
                     var available = availableUtxos[0].available;
                     var ix = availableUtxos[0].ix;
                     var utxo = availableUtxos[0].utxo;
-                    console.log(`Going to send token. NftAddress: ${nftAddress}. PaymentAddress: ${paymentAddress}. Available: ${available}. Policy: ${policy}.  Utxo: ${utxo}.  ix: ${ix}. UsePath: ${usePath}. NftIdentifier: ${nftIdentifier}`);             
                     log.info(`Going to send token. NftAddress: ${nftAddress}. PaymentAddress: ${paymentAddress}. Available: ${available}. Policy: ${policy}.  Utxo: ${utxo}.  ix: ${ix}. UsePath: ${usePath}. NftIdentifier: ${nftIdentifier}`);             
 
                     buildTxWithToken(0, available, nftAddress, paymentAddress, policy, utxo, ix, usePath, nftIdentifier).then(
@@ -728,46 +661,39 @@ function sendToken(nftAddress, paymentAddress, policy, usePath, nftIdentifier, t
                                                                     submitTx(usePath).then(
                                                                         (responseSubmitTx) => {
                                                                             if (responseSubmitTx) {
-                                                                                console.log('SUCCESS Sending Tx');
                                                                                 log.info('SUCCESS Sending Tx');
 
                                                                                 con.query(`UPDATE TestNft SET addressSent = true WHERE identifier = '${nftIdentifier}';`, function (err, result) {
                                                                                     if (err) throw err;
-                                                                                    console.log(result.affectedRows + " record(s) updated (TestNft)");
                                                                                     log.info(result.affectedRows + " record(s) updated (TestNft)");
                                                                                 });
                                                                             }
                                                                         },
                                                                         (errorSubmitTx) => {
-                                                                            console.log('Error Submitting Tx');
                                                                             log.error('Error Submitting Tx');
                                                                         }
                                                                     );
                                                                 }
                                                             },
                                                             (errorSignTx) => {
-                                                                console.log('Error Signing Fee');
                                                                 log.error('Error Signing Fee');
                                                             }
                                                         );
                                                     }
                                                 },
                                                 (errorBuildTx) => {
-                                                    console.log('Error Building Tx');
                                                     log.error('Error Building Tx');
                                                 }
                                             );
                                         }
                                     },
                                     (errorGetFee) => {
-                                        console.log('Error Getting Fee');
                                         log.error('Error Getting Fee');
                                     }
                                 );
                             }
                         },
                         (errorBuildRaw) => {
-                            console.log('Error Building Raw');
                             log.error('Error Building Raw');
                         }
                     );
@@ -775,7 +701,6 @@ function sendToken(nftAddress, paymentAddress, policy, usePath, nftIdentifier, t
             }
         }, 
         (errorGetUtxos) => {
-            console.log('Error Getting utxos');
             log.error('Error Getting utxos');
         });
 }
@@ -787,7 +712,6 @@ function sendToken2(orinalAvailable, nftAddress, paymentAddress, policy, usePath
                     var ix = 0;
                     var utxo = responseGetLastUtxo;
                     var available = orinalAvailable - mintTokenFee;
-                    console.log(`Going to send token. NftAddress: ${nftAddress}. PaymentAddress: ${paymentAddress}. Available: ${available}. Policy: ${policy}.  Utxo: ${utxo}.  ix: ${ix}. UsePath: ${usePath}. NftIdentifier: ${nftIdentifier}`);
                     log.info(`Going to send token. NftAddress: ${nftAddress}. PaymentAddress: ${paymentAddress}. Available: ${available}. Policy: ${policy}.  Utxo: ${utxo}.  ix: ${ix}. UsePath: ${usePath}. NftIdentifier: ${nftIdentifier}`);             
             
                     buildTxWithToken(0, available, nftAddress, paymentAddress, policy, utxo, ix, usePath, nftIdentifier).then(
@@ -805,53 +729,45 @@ function sendToken2(orinalAvailable, nftAddress, paymentAddress, policy, usePath
                                                                     submitTx(usePath).then(
                                                                         (responseSubmitTx) => {
                                                                             if (responseSubmitTx) {
-                                                                                console.log('SUCCESS Sending Tx');
                                                                                 log.info('SUCCESS Sending Tx');
 
                                                                                 con.query(`UPDATE TestNft SET addressSent = true WHERE identifier = '${nftIdentifier}';`, function (err, result) {
                                                                                     if (err) throw err;
-                                                                                    console.log(result.affectedRows + " record(s) updated (TestNft)");
                                                                                     log.info(result.affectedRows + " record(s) updated (TestNft)");
                                                                                 });
                                                                             }
                                                                         },
                                                                         (errorSubmitTx) => {
-                                                                            console.log('Error Submitting Tx');
                                                                             log.error('Error Submitting Tx');
                                                                         }
                                                                     );
                                                                 }
                                                             },
                                                             (errorSignTx) => {
-                                                                console.log('Error Signing Fee');
                                                                 log.error('Error Signing Fee');
                                                             }
                                                         );
                                                     }
                                                 },
                                                 (errorBuildTx) => {
-                                                    console.log('Error Building Tx');
                                                     log.error('Error Building Tx');
                                                 }
                                             );
                                         }
                                     },
                                     (errorGetFee) => {
-                                        console.log('Error Getting Fee');
                                         log.error('Error Getting Fee');
                                     }
                                 );
                             }
                         },
                         (errorBuildRaw) => {
-                            console.log('Error Building Raw');
                             log.error('Error Building Raw');
                         }
                     );
             }
         }, 
         (errorGetLastUtxo) => {
-            console.log('Error getiing last utxo Raw');
             log.error('Error getiing last utxo Raw');
     });
 }
