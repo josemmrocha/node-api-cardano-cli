@@ -4,7 +4,11 @@ const constants = require('./constants/constants');
 const { response } = require('express');
 const { createMetadataFile } = require('./commandController');
 var tools = require('./tools/tools');
-const log = require('simple-node-logger').createSimpleLogger(constants.testNFTPath + 'project.log');
+var opts = {
+    logFilePath: constants.testNFTPath + 'project.log',
+    timestampFormat:'YYYY-MM-DD HH:mm:ss.SSS'
+};
+const log = require('simple-node-logger').createSimpleLogger(opts);
 
 const policyIdTestNFT = constants.policyIdTestNFT;
 const publisherName = constants.publisherName;
