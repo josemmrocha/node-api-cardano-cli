@@ -164,11 +164,13 @@ exports.scanAddrTxMintAndSend = function(req, res) {
                     });
                 }      
             } else {
-                res.status(500).send('err');
+                console.log(`There are no tx.`);
+                log.info(`There are no tx.`);
             }
         }, 
         (errorGetAllTx) => {
-            res.status(500).send('err');
+            console.log(`Error errorGetAllTx: ` + errorGetAllTx);
+            log.error(`Error errorGetAllTx: ` + errorGetAllTx);
     });
 };
 
@@ -560,7 +562,7 @@ function mintandSendToken(available, addressForNft, paymentAddress, policy, utxo
                                                                                 if (err) throw err;
                                                                                 console.log(result.affectedRows + " record(s) updated (TestNft)");
                                                                                 log.info(result.affectedRows + " record(s) updated (TestNft)");
-                                                                                sendToken2(addressForNft, paymentAddress, policy, usePath, nftIdentifier, txHash, responseGetFee);
+                                                                                sendToken2(available, addressForNft, paymentAddress, policy, usePath, nftIdentifier, txHash, responseGetFee);
                                                                                 // setTimeout(function () {
                                                                                 //     sendToken(addressForNft, paymentAddress, policy, usePath, nftIdentifier, txHash);   
                                                                                 // }, 40000);
@@ -690,13 +692,13 @@ function sendToken(nftAddress, paymentAddress, policy, usePath, nftIdentifier, t
         });
 }
 
-function sendToken2(nftAddress, paymentAddress, policy, usePath, nftIdentifier, txHash, mintTokenFee) {
+function sendToken2(orinalAvailable, nftAddress, paymentAddress, policy, usePath, nftIdentifier, txHash, mintTokenFee) {
     getLastUtxo(usePath).then(
         (responseGetLastUtxo) => {
             if (responseGetLastUtxo) {          
                     var ix = 0;
                     var utxo = responseGetLastUtxo;
-                    var available = constants.nftPrice - mintTokenFee;
+                    var available = orinalAvailable - mintTokenFee;
                     console.log(`Going to send token. NftAddress: ${nftAddress}. PaymentAddress: ${paymentAddress}. Available: ${available}. Policy: ${policy}.  Utxo: ${utxo}.  ix: ${ix}. UsePath: ${usePath}. NftIdentifier: ${nftIdentifier}`);
                     log.info(`Going to send token. NftAddress: ${nftAddress}. PaymentAddress: ${paymentAddress}. Available: ${available}. Policy: ${policy}.  Utxo: ${utxo}.  ix: ${ix}. UsePath: ${usePath}. NftIdentifier: ${nftIdentifier}`);             
             
