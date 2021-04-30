@@ -182,16 +182,10 @@ exports.buildTxMultipleInputs = function(req, res) {
 		totalAvailable += available;
 	});
 
-	totalIputs += ` \ `;		
 	var path = usePath ? testNFTPath : '';
 	var sendToBuyerAddr = fee === 0 ? 0 : totalAvailable - fee;
 
-	exec(`cardano-cli transaction build-raw \
-	--mary-era \
-	--fee ${fee} \
-	${totalIputs}
-	--tx-out ${paymentAddress}+${sendToBuyerAddr}\
-	--out-file ${path}matx.raw`, (err, stdout, stderr) => {
+	exec(`cardano-cli transaction build-raw --mary-era --fee ${fee} ${totalIputs}--tx-out ${paymentAddress}+${sendToBuyerAddr} --out-file ${path}matx.raw`, (err, stdout, stderr) => {
 		if (err || stderr) {
 			console.log(`err: ${err}`);
 			console.log(`stderr: ${stderr}`);
