@@ -216,7 +216,7 @@ async function getUtxos(addr) {
 
     try {
         let res = await axios.get(url);
-        return res.data;
+        return res.data.trim();
     } catch (error) {
         console.log('Error in getUtxos call: ' + error);
         return undefined;
