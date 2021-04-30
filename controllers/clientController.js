@@ -284,7 +284,7 @@ async function buildTxWithToken(fee, available, nftAddress, paymentAddress, poli
 }
 
 async function buildTxWithToken2(fee, paymentAddress, policy, utxo, ix, usePath, nftIdentifier) {
-    var url = `http://localhost:4200/api/buildTxWithToken/${fee}/${paymentAddress}/${policy}/${utxo}/${ix}/${usePath}/${nftIdentifier}`;
+    var url = `http://localhost:4200/api/buildTxWithToken2/${fee}/${paymentAddress}/${policy}/${utxo}/${ix}/${usePath}/${nftIdentifier}`;
 
     try {
         let res = await axios.get(url);
