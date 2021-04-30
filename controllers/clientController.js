@@ -360,7 +360,7 @@ async function getLastUtxo(usePath) {
     var url = `http://localhost:4200/api/getLastUtxo/${usePath}`;
 
     try {
-        let res = await axios.post(url, JSON.parse(jsonstr));
+        let res = await axios.get(url);
         return res.data;
     } catch (error) {
         console.log('Error in getLastUtxo call: ' + error);
