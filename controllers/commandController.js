@@ -180,7 +180,7 @@ exports.buildTxMultipleInputs = function(req, res) {
 		console.log('available: ' + available);
 		var input = `--tx-in ${utxo}#${ix} `;
 		totalIputs += input;
-		totalAvailable += available;
+		totalAvailable += parseInt(available);
 	});
 
 	console.log('totalAvailable: ' + totalAvailable);
