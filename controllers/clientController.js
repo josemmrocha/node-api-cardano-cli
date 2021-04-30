@@ -463,13 +463,18 @@ function selectTokenMintAndSend(available, addressForNft, paymentAddress, policy
         if (err) throw err;
         var nonProcessedNfts = rows;
         console.log('NonProcessedNfts: ' + nonProcessedNfts.length);
-        // TODO aqui meter logica para que devuelva si ya no hay tokens.
-        var randomNftFromNonProcessed = nonProcessedNfts.length === 0 ? nonProcessedNfts[0] : nonProcessedNfts[Math.floor(Math.random() * nonProcessedNfts.length)];
-        console.log('Random TestNft Selected. Identifier: ' + randomNftFromNonProcessed.identifier);
 
-        mintandSendToken(available, addressForNft, paymentAddress, policy, utxo, ix, usePath,
-            randomNftFromNonProcessed.identifier, randomNftFromNonProcessed.name,
-            randomNftFromNonProcessed.image, randomNftFromNonProcessed.location, txHash);
+        if (nonProcessedNfts.length === 0) {
+            // TODO aqui meter logica para que devuelva si ya no hay tokens.
+            console.log('No more Tokens. NEEDED REFUND to Address: ' + paymentAddress);
+        } else {
+            var randomNftFromNonProcessed = nonProcessedNfts.length === 1 ? nonProcessedNfts[0] : nonProcessedNfts[Math.floor(Math.random() * nonProcessedNfts.length)];
+            console.log('Random TestNft Selected. Identifier: ' + randomNftFromNonProcessed.identifier);
+
+            mintandSendToken(available, addressForNft, paymentAddress, policy, utxo, ix, usePath,
+                randomNftFromNonProcessed.identifier, randomNftFromNonProcessed.name,
+                randomNftFromNonProcessed.image, randomNftFromNonProcessed.location, txHash);
+        }      
     });
 }
 
