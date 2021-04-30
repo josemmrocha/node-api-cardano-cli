@@ -4,6 +4,7 @@ const constants = require('./constants/constants');
 const { response } = require('express');
 const { createMetadataFile } = require('./commandController');
 var tools = require('./tools/tools');
+const log = require('simple-node-logger').createSimpleLogger('project.log');
 
 const policyIdTestNFT = constants.policyIdTestNFT;
 const publisherName = constants.publisherName;
@@ -108,6 +109,7 @@ exports.scanAddrTxMintAndSend = function(req, res) {
             if (responseGetAllTx) {
                 var allTxs = JSON.parse(responseGetAllTx);
                 console.log(`There are ${allTxs.length} txs in this address`);
+                log.info(`There are ${allTxs.length} txs in this address`, new Date().toJSON());
 
                 if (allTxs && allTxs.length > 0) {
                     con.query('SELECT txHash FROM ProcessedTx;', function (err, rows, fields) {
