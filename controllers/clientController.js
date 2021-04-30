@@ -633,32 +633,51 @@ function sendToken2(nftAddress, paymentAddress, policy, usePath, nftIdentifier, 
             if (responseGetLastUtxo) {          
                     var ix = 0;
                     var utxo = responseGetLastUtxo;
-                    console.log(`Going to send token. NftAddress: ${nftAddress}. PaymentAddress: ${paymentAddress}. Policy: ${policy}.  Utxo: ${utxo}.  ix: ${ix}. UsePath: ${usePath}. NftIdentifier: ${nftIdentifier}`);             
-                    buildTxWithToken2(0, paymentAddress, policy, utxo, ix, usePath, nftIdentifier).then(
+                    var available = constants.nftPrice;
+                    console.log(`Going to send token. NftAddress: ${nftAddress}. PaymentAddress: ${paymentAddress}. Available: ${available}. Policy: ${policy}.  Utxo: ${utxo}.  ix: ${ix}. UsePath: ${usePath}. NftIdentifier: ${nftIdentifier}`);             
+                    buildTxWithToken(0, available, nftAddress, paymentAddress, policy, utxo, ix, usePath, nftIdentifier).then(
                         (responseBuildRaw) => {
                             if (responseBuildRaw) {
-                                signTx(usePath).then(
-                                    (responseSignTx) => {
-                                        if (responseSignTx) {
-                                            submitTx(usePath).then(
-                                                (responseSubmitTx) => {
-                                                    if (responseSubmitTx) {
-                                                        console.log('SUCCESS Sending Tx');
-
-                                                        con.query(`UPDATE TestNft SET addressSent = true WHERE identifier = '${nftIdentifier}';`, function (err, result) {
-                                                            if (err) throw err;
-                                                            console.log(result.affectedRows + " record(s) updated (TestNft)");
-                                                        });
+                                getFee(1, 2, 1,usePath).then(
+                                    (responseGetFee) => {
+                                        if (responseGetFee && responseGetFee !== 0) {
+                                            buildTxWithToken(responseGetFee, available, nftAddress, paymentAddress, policy, utxo, ix, usePath, nftIdentifier).then(
+                                                (responseBuildTx) => {
+                                                    if (responseBuildTx) {
+                                                        signTx(usePath).then(
+                                                            (responseSignTx) => {
+                                                                if (responseSignTx) {
+                                                                    submitTx(usePath).then(
+                                                                        (responseSubmitTx) => {
+                                                                            if (responseSubmitTx) {
+                                                                                console.log('SUCCESS Sending Tx');
+                
+                                                                                con.query(`UPDATE TestNft SET addressSent = true WHERE identifier = '${nftIdentifier}';`, function (err, result) {
+                                                                                    if (err) throw err;
+                                                                                    console.log(result.affectedRows + " record(s) updated (TestNft)");
+                                                                                });
+                                                                            }
+                                                                        },
+                                                                        (errorSubmitTx) => {
+                                                                            console.log('Error Submitting Tx');
+                                                                        }
+                                                                    );
+                                                                }
+                                                            },
+                                                            (errorSignTx) => {
+                                                                console.log('Error Signing Fee');
+                                                            }
+                                                        );
                                                     }
                                                 },
-                                                (errorSubmitTx) => {
-                                                    console.log('Error Submitting Tx');
+                                                (errorBuildTx) => {
+                                                    console.log('Error Building Tx');
                                                 }
                                             );
                                         }
                                     },
-                                    (errorSignTx) => {
-                                        console.log('Error Signing Fee');
+                                    (errorGetFee) => {
+                                        console.log('Error Getting Fee');
                                     }
                                 );
                             }
@@ -667,14 +686,12 @@ function sendToken2(nftAddress, paymentAddress, policy, usePath, nftIdentifier, 
                             console.log('Error Building Raw');
                         }
                     );
-                
             }
         }, 
         (errorGetLastUtxo) => {
             console.log('Error getiing last utxo Raw');
     });
 }
-
 
 function getMintMetadata(policyId, publisher, nftIdentifier, name, imagePath, location) {
     var str = `{"721":{"${policyId}":{"publisher":"${publisher}","${nftIdentifier}":{"name":"${name}","image":"${imagePath}","location":"${location}"}}}}`;
