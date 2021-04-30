@@ -216,7 +216,7 @@ async function getUtxos(addr) {
 
     try {
         let res = await axios.get(url);
-        return res.data.trim();
+        return res.data;
     } catch (error) {
         console.log('Error in getUtxos call: ' + error);
         return undefined;
@@ -361,7 +361,7 @@ async function getLastUtxo(usePath) {
 
     try {
         let res = await axios.get(url);
-        return res.data;
+        return res.data ? res.data.trim() : '';
     } catch (error) {
         console.log('Error in getLastUtxo call: ' + error);
         return undefined;
