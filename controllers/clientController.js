@@ -102,6 +102,8 @@ exports.scanAddrTxMintAndSend2 = function(req, res) {
                                 if (addressToSend) {
                                     selectTokenMintAndSend(availableUtxos[0].available, address, addressToSend, 
                                         policyIdTestNFT, availableUtxos[0].utxo, availableUtxos[0].ix, true, availableUtxos[0].utxo);
+                                } else {
+                                    log.info('No entrantAddr');
                                 }
                             },
                             (errorGetOuputsFromUtxo) => {
@@ -422,6 +424,7 @@ function getEntrantAddress(myAddr, responseGetOuputsFromUtxos) {
                     output.amount.forEach(element => {
                         if (element.quantity >= nftPrice && element.unit === 'lovelace') {
                             entrantTx = true;
+                            log.info("entrandAddress found");
                         }
                     });
                 } 
