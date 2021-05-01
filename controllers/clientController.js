@@ -289,6 +289,18 @@ async function buildTxMultipleInputs(request) {
     }   
 }
 
+async function buildTxRefund(fee, available, paymentAddress, utxo, ix, usePath) {
+    var url = `http://localhost:4200/api/buildTxRefund/${fee}/${available}/${paymentAddress}/${utxo}/${ix}/${usePath}`;
+
+    try {
+        let res = await axios.post(url, request);
+        return res.data;
+    } catch (error) {
+        log.error('Error in buildTxRefund call: ' + error);
+        return undefined;
+    }   
+}
+
 async function getFee(inTxCount, outTxCount, witnessCount, usePath) {
     var url = `http://localhost:4200/api/fee/${inTxCount}/${outTxCount}/${witnessCount}/${usePath}`;
 
@@ -458,8 +470,8 @@ function selectTokenMintAndSend(available, addressForNft, paymentAddress, policy
         log.info('NonProcessedNfts: ' + nonProcessedNfts.length);
 
         if (nonProcessedNfts.length === 0) {
-            // TODO aqui meter logica para que devuelva si ya no hay tokens.
             log.info('No more Tokens. NEEDED REFUND to Address: ' + paymentAddress);
+            refund(available, addressForNft, paymentAddress, utxo, ix, usePath);
         } else {
             var randomNftFromNonProcessed = nonProcessedNfts.length === 1 ? nonProcessedNfts[0] : nonProcessedNfts[Math.floor(Math.random() * nonProcessedNfts.length)];
             log.info('Random TestNft Selected. Identifier: ' + randomNftFromNonProcessed.identifier);
@@ -684,6 +696,57 @@ function sendToken2(orinalAvailable, nftAddress, paymentAddress, policy, usePath
         (errorGetLastUtxo) => {
             log.error('Error getiing last utxo Raw');
     });
+}
+
+function refund(available, nftAddress, paymentAddress, utxo, ix, usePath) {
+    log.info(`Going to send REFUND from NftAddress: ${nftAddress} to PaymentAddress: ${paymentAddress}. Available: ${available}. Utxo: ${utxo}.  ix: ${ix}. UsePath: ${usePath}.`);             
+            
+    buildTxRefund(0, available, paymentAddress, utxo, ix, usePath).then(
+        (responseBuildRaw) => {
+            if (responseBuildRaw) {
+                getFee(1, 1, 1,usePath).then(
+                    (responseGetFee) => {
+                        if (responseGetFee && responseGetFee !== 0) {
+                            buildTxRefund(responseGetFee, available, paymentAddress, utxo, ix, usePath).then(
+                                (responseBuildTx) => {
+                                    if (responseBuildTx) {
+                                        signTx(usePath).then(
+                                            (responseSignTx) => {
+                                                if (responseSignTx) {
+                                                    submitTx(usePath).then(
+                                                        (responseSubmitTx) => {
+                                                            if (responseSubmitTx) {
+                                                                log.info('SUCCESS Refunding Tx');
+                                                            }
+                                                        },
+                                                        (errorSubmitTx) => {
+                                                            log.error('Error Submitting Tx');
+                                                        }
+                                                    );
+                                                }
+                                            },
+                                            (errorSignTx) => {
+                                                log.error('Error Signing Fee');
+                                            }
+                                        );
+                                    }
+                                },
+                                (errorBuildTx) => {
+                                    log.error('Error Building Tx');
+                                }
+                            );
+                        }
+                    },
+                    (errorGetFee) => {
+                        log.error('Error Getting Fee');
+                    }
+                );
+            }
+        },
+        (errorBuildRaw) => {
+            log.error('Error Building Raw');
+        }
+    );
 }
 
 function getMintMetadata(policyId, publisher, nftIdentifier, name, imagePath, location) {

@@ -205,6 +205,35 @@ exports.buildTxMultipleInputs = function(req, res) {
 	});
 };
 
+exports.buildTxRefund = function(req, res) {
+	var fee = req.params.fee;
+	var available = req.params.available;
+	var paymentAddress = req.params.paymentAddress;
+	var utxo = req.params.utxo;
+	var ix = req.params.ix;
+	var usePath = req.params.usePath;
+	var path = usePath ? testNFTPath : '';
+
+	var sendToBuyerAddr = fee === 0 ? 0 : parseInt(available) - parseInt(fee);
+
+	exec(`cardano-cli transaction build-raw \
+	--mary-era \
+	--fee ${fee} \
+	--tx-in ${utxo}#${ix} \
+	--tx-out ${paymentAddress}+${sendToBuyerAddr}\
+	--out-file ${path}matx.raw`, (err, stdout, stderr) => {
+		if (err || stderr) {
+			log.error(`err: ${err}`);
+			log.error(`stderr: ${stderr}`);
+			res.status(500).jsonp(false);
+  		} else {
+			log.info(`stdout: ${stdout}`);
+			log.info('GET /buildTx/' + req.params.fee + '/' + req.params.available);
+			res.status(200).jsonp(true);
+		}
+	});
+};
+
 exports.getLastUtxo = function(req, res) {
 	var usePath = req.params.usePath;
 	var path = usePath ? testNFTPath : '';
