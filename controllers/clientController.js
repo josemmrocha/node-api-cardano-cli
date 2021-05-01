@@ -424,7 +424,8 @@ function getEntrantAddress(myAddr, responseGetOuputsFromUtxos) {
                     output.amount.forEach(element => {
                         if (element.quantity >= nftPrice && element.unit === 'lovelace') {
                             entrantTx = true;
-                            log.info("entrandAddress found");
+                        } else {
+                            log.info(`Not enough qty sent to addr: ${element.quantity}. (unit: ${element.unit})`);
                         }
                     });
                 } 
@@ -434,7 +435,7 @@ function getEntrantAddress(myAddr, responseGetOuputsFromUtxos) {
                 responseGetOuputsFromUtxo.outputs.forEach(output => {
                     if (output.address !== myAddr && !sentAdaToAddr) {
                         output.amount.forEach(element => {
-                            if (element.quantity >= nftPrice && element.unit === 'lovelace' && !sentAdaToAddr) {
+                            if (element.unit === 'lovelace' && !sentAdaToAddr) {
                                 log.info('Addr: ' + output.address + '. Qty: ' + element.quantity);
                                 sentAdaToAddr = output.address;
                             }
