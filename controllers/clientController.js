@@ -519,15 +519,15 @@ function selectTokenMintAndSend(available, addressForNft, paymentAddress, policy
 
             mintandSendToken(available, addressForNft, paymentAddress, policy, utxo, ix, usePath,
                 randomNftFromNonProcessed.identifier, randomNftFromNonProcessed.name,
-                randomNftFromNonProcessed.image, randomNftFromNonProcessed.location, txHash);
+                randomNftFromNonProcessed.image, randomNftFromNonProcessed.position, txHash);
         }      
     });
 }
 
-function mintandSendToken(available, addressForNft, paymentAddress, policy, utxo, ix, usePath, nftIdentifier, name, imagePath, location, txHash) {
+function mintandSendToken(available, addressForNft, paymentAddress, policy, utxo, ix, usePath, nftIdentifier, name, imagePath, position, txHash) {
     log.info(`Going to mint token. Address: ${addressForNft}. Available: ${available}. Policy: ${policy}.  Utxo: ${utxo}.  ix: ${ix}. UsePath: ${usePath}. NftIdentifier: ${nftIdentifier}.`);
 
-    var metadata = getMintMetadata(policy, publisherName, nftIdentifier, name, imagePath, location);
+    var metadata = getMintMetadata(policy, publisherName, nftIdentifier, name, imagePath, position);
     log.info('Metadata: ' + metadata);
 
     createmetadataFile(metadata, usePath).then(
@@ -790,7 +790,7 @@ function refund(available, nftAddress, paymentAddress, utxo, ix, usePath) {
     );
 }
 
-function getMintMetadata(policyId, publisher, nftIdentifier, name, imagePath, location) {
-    var str = `{"721":{"${policyId}":{"publisher":"${publisher}","${nftIdentifier}":{"name":"${name}","image":"${imagePath}","location":"${location}"}}}}`;
+function getMintMetadata(policyId, publisher, nftIdentifier, name, imagePath, position) {
+    var str = `{"721":{"${policyId}":{"publisher":"${publisher}","${nftIdentifier}":{"name":"${name}","image":"${imagePath}","position":"${position}"}}}}`;
     return str;
 }
