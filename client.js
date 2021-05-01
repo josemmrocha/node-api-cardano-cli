@@ -31,6 +31,9 @@ commands.route('/sendMintedNotSentTokens/:addr')
 commands.route('/sendAllUtxosToAddr/:nftAddress/:paymentAddress')
   .get(ClientCtrl.sendAllUtxosToAddr);
 
+commands.route('/testWebDB')
+  .get(ClientCtrl.testWebDB);
+
 app.use('/api', commands);
 
 app.listen(4800, function() {

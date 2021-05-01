@@ -187,6 +187,24 @@ exports.sendAllUtxosToAddr = function(req, res) {
     res.status(200).send('running');
 }
 
+exports.testWebDB = function(req, res) {
+    try{
+        var testCon = mysql.createConnection({
+            host     : 'cardanochess.com',
+            user     : 'xxx',
+            password : 'xxx',
+            database: 'xxx'
+        });
+        testCon.query(`Select * from ProcessedTx;`, function (err, rows, fields) {
+            if (err) throw err;
+            log.info('Inserted ProcessedTx: ');
+            res.status(200).send(rows);
+        });
+    } catch(error) {
+        res.status(500).send(error);
+    }
+}
+
 async function getUtxos(addr) {
     var url = `http://localhost:4200/api/utxos/${addr}`;
 
@@ -608,15 +626,15 @@ function sendToken2(orinalAvailable, nftAddress, paymentAddress, policy, usePath
                     var ix = 0;
                     var utxo = responseGetLastUtxo;
                     var available = orinalAvailable - mintTokenFee;
-                    log.info(`Going to send token. NftAddress: ${nftAddress}. PaymentAddress: ${paymentAddress}. Available: ${available}. Policy: ${policy}.  Utxo: ${utxo}.  ix: ${ix}. UsePath: ${usePath}. NftIdentifier: ${nftIdentifier}`);             
+                    log.info(`Going to send token from NftAddress: ${nftAddress} to PaymentAddress: ${paymentAddress} and RecievedPaymentAddr: ${constants.recievePaymentsAddr}. Available: ${available}. Policy: ${policy}.  Utxo: ${utxo}.  ix: ${ix}. UsePath: ${usePath}. NftIdentifier: ${nftIdentifier}`);             
             
-                    buildTxWithToken(0, available, nftAddress, paymentAddress, policy, utxo, ix, usePath, nftIdentifier).then(
+                    buildTxWithToken(0, available, constants.recievePaymentsAddr, paymentAddress, policy, utxo, ix, usePath, nftIdentifier).then(
                         (responseBuildRaw) => {
                             if (responseBuildRaw) {
                                 getFee(1, 2, 1,usePath).then(
                                     (responseGetFee) => {
                                         if (responseGetFee && responseGetFee !== 0) {
-                                            buildTxWithToken(responseGetFee, available, nftAddress, paymentAddress, policy, utxo, ix, usePath, nftIdentifier).then(
+                                            buildTxWithToken(responseGetFee, available, constants.recievePaymentsAddr, paymentAddress, policy, utxo, ix, usePath, nftIdentifier).then(
                                                 (responseBuildTx) => {
                                                     if (responseBuildTx) {
                                                         signTx(usePath).then(

@@ -5,4 +5,5 @@ module.exports = {
     publisherName: 'test.com', // adachess.com
     minAvailableQtyInUtxo: 2500000, // 3000000 = 3 ADA. This has to be lower that nftPrice
     nftPrice: 3000000,  // 2000000 = 2 ADA
+    recievePaymentsAddr: 'addr1q9sdzr9an4w5uhu96eppc550p6844zfw9t53l53mr9kycma2l79z02ag4ejmtlqtxtpmypttv84f8avgylftx4azyzrql6tu9d',
 };
