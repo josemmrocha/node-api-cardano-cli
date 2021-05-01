@@ -42,7 +42,7 @@ commands.route('/buildTxMultipleInputs/')
   .post(CommandCtrl.buildTxMultipleInputs);
 
 commands.route('/buildTxRefund/:fee/:available/:paymentAddress/:utxo/:ix/:usePath')
-  .post(CommandCtrl.buildTxRefund);
+  .get(CommandCtrl.buildTxRefund);
 
 commands.route('/fee/:inTxCount/:outTxCount/:witnessCount/:usePath')
   .get(CommandCtrl.getFee);
