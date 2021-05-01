@@ -293,7 +293,7 @@ async function buildTxRefund(fee, available, paymentAddress, utxo, ix, usePath) 
     var url = `http://localhost:4200/api/buildTxRefund/${fee}/${available}/${paymentAddress}/${utxo}/${ix}/${usePath}`;
 
     try {
-        let res = await axios.post(url, request);
+        let res = await axios.get(url);
         return res.data;
     } catch (error) {
         log.error('Error in buildTxRefund call: ' + error);
