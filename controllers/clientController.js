@@ -791,6 +791,6 @@ function refund(available, nftAddress, paymentAddress, utxo, ix, usePath) {
 }
 
 function getMintMetadata(policyId, publisher, nftIdentifier, name, imagePath, position) {
-    var str = `{"721":{"${policyId}":{"publisher":"${publisher}","${nftIdentifier}":{"name":"${name}","image":"${imagePath}","position":"${position}"}}}}`;
+    var str = `{"721":{"${policyId}":{"publisher":"${publisher}","${nftIdentifier}":{"name":"${name}","image":"${imagePath}","position":"${position}","publisher":"${publisher}"}}}}`;
     return str;
 }
