@@ -84,6 +84,43 @@ exports.scanAddrTxMintAndSend = function(req, res) {
     }  
 };
 
+exports.scanAddrTxMintAndSend2 = function(req, res) {
+    var address = req.params.addr;
+    res.status(200).send('running');
+
+    try {
+        getUtxos(address).then(
+            (responseGetUtxos) => {
+                if (responseGetUtxos && responseGetUtxos.length > 0) {
+                    var availableUtxos = responseGetUtxos.filter(x => x.available > minAvailableQtyInUtxo);
+                    log.info('availableUtxos.count: ' + availableUtxos.length);
+                    // TODO aqui coger no la primera, sino la que de verdad tiene el token.
+                    if (availableUtxos && availableUtxos.length > 0) {
+                        getOuputsFromUtxo(availableUtxos[0].utxo).then(
+                            (responseGetOuputsFromUtxo) => {
+                                var addressToSend = getEntrantAddress(address, responseGetOuputsFromUtxo);
+                                if (addressToSend) {
+                                    selectTokenMintAndSend(availableUtxos[0].available, address, addressToSend, 
+                                        policyIdTestNFT, availableUtxos[0].utxo, availableUtxos[0].ix, true, availableUtxos[0].utxo);
+                                }
+                            },
+                            (errorGetOuputsFromUtxo) => {
+                                log.error(`Error errorGetOuputsFromUtxo: ` + errorGetOuputsFromUtxo);
+                            }
+                        );                     
+                    }
+                } else {
+                    log.info('There are no utxos');
+                }
+            }, 
+            (errorGetUtxos) => {
+                log.error(`Error errorGetUtxos: ` + errorGetUtxos);
+            });
+    } catch(error) {
+        log.error(`Error main job: ` + error);
+    }  
+};
+
 exports.sendMintedNotSentTokens = function(req, res) {
     var address = req.params.addr;
     res.status(200).send('running');

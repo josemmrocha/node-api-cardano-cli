@@ -25,6 +25,9 @@ var commands = express.Router();
 commands.route('/scanAddrTxMintAndSend/:addr')
   .get(ClientCtrl.scanAddrTxMintAndSend);
 
+ commands.route('/scanAddrTxMintAndSend2/:addr')
+  .get(ClientCtrl.scanAddrTxMintAndSend2);
+
 commands.route('/sendMintedNotSentTokens/:addr')
   .get(ClientCtrl.sendMintedNotSentTokens);
 
