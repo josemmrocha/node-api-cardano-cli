@@ -519,15 +519,15 @@ function selectTokenMintAndSend(available, addressForNft, paymentAddress, policy
 
             mintandSendToken(available, addressForNft, paymentAddress, policy, utxo, ix, usePath,
                 randomNftFromNonProcessed.identifier, randomNftFromNonProcessed.name,
-                randomNftFromNonProcessed.image, randomNftFromNonProcessed.position, txHash);
+                randomNftFromNonProcessed.image, randomNftFromNonProcessed.position, txHash, randomNftFromNonProcessed.piece, randomNftFromNonProcessed.color);
         }      
     });
 }
 
-function mintandSendToken(available, addressForNft, paymentAddress, policy, utxo, ix, usePath, nftIdentifier, name, imagePath, position, txHash) {
+function mintandSendToken(available, addressForNft, paymentAddress, policy, utxo, ix, usePath, nftIdentifier, name, imagePath, position, txHash, piece, color) {
     log.info(`Going to mint token. Address: ${addressForNft}. Available: ${available}. Policy: ${policy}.  Utxo: ${utxo}.  ix: ${ix}. UsePath: ${usePath}. NftIdentifier: ${nftIdentifier}.`);
 
-    var metadata = getMintMetadata(policy, publisherName, nftIdentifier, name, imagePath, position);
+    var metadata = getMintMetadata(policy, publisherName, nftIdentifier, name, imagePath, position, piece, color);
     log.info('Metadata: ' + metadata);
 
     createmetadataFile(metadata, usePath).then(
@@ -790,7 +790,7 @@ function refund(available, nftAddress, paymentAddress, utxo, ix, usePath) {
     );
 }
 
-function getMintMetadata(policyId, publisher, nftIdentifier, name, imagePath, position) {
-    var str = `{"721":{"${policyId}":{"publisher":"${publisher}","${nftIdentifier}":{"name":"${name}","image":"${imagePath}","position":"${position}","publisher":"${publisher}"}}}}`;
+function getMintMetadata(policyId, publisher, nftIdentifier, name, imagePath, position, piece, color) {
+    var str = `{"721":{"${policyId}":{"publisher":"${publisher}","${nftIdentifier}":{"name":"${name}","image":"${imagePath}","piece":"${piece}","color":"${color}","position":"${position}","publisher":"${publisher}"}}}}`;
     return str;
 }
