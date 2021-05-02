@@ -49,7 +49,7 @@ exports.scanAddrTxMintAndSend = function(req, res) {
                                             getUtxos(address).then(
                                                 (responseGetUtxos) => {
                                                     if (responseGetUtxos && responseGetUtxos.length > 0) {
-                                                        var availableUtxos = responseGetUtxos.filter(x => x.available > minAvailableQtyInUtxo);
+                                                        var availableUtxos = responseGetUtxos.filter(x => x.available >= minAvailableQtyInUtxo);
                                                         log.info('availableUtxos.count: ' + availableUtxos.length);
                                                         // TODO aqui coger no la primera, sino la que de verdad tiene el token.
                                                         if (availableUtxos && availableUtxos.length > 0) {
@@ -92,7 +92,7 @@ exports.scanAddrTxMintAndSend2 = function(req, res) {
         getUtxos(address).then(
             (responseGetUtxos) => {
                 if (responseGetUtxos && responseGetUtxos.length > 0) {
-                    var availableUtxos = responseGetUtxos.filter(x => x.available > minAvailableQtyInUtxo);
+                    var availableUtxos = responseGetUtxos.filter(x => x.available >= minAvailableQtyInUtxo);
                     log.info('availableUtxos.count: ' + availableUtxos.length);
                     // TODO aqui coger no la primera, sino la que de verdad tiene el token.
                     if (availableUtxos && availableUtxos.length > 0) {
@@ -605,7 +605,7 @@ function sendToken(nftAddress, paymentAddress, policy, usePath, nftIdentifier, t
     getUtxos(nftAddress).then(
         (responseGetUtxos) => {
             if (responseGetUtxos && responseGetUtxos.length > 0) {
-                var availableUtxos = responseGetUtxos.filter(x => x.available > minAvailableQtyInUtxo); //TODO add && contains token
+                var availableUtxos = responseGetUtxos.filter(x => x.available >= minAvailableQtyInUtxo); //TODO add && contains token
                 log.info('availableUtxos.count: ' + availableUtxos.length);
                 if (availableUtxos && availableUtxos.length > 0) {
                     var available = availableUtxos[0].available;
