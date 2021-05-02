@@ -15,7 +15,7 @@ const publisherName = constants.publisherName;
 var minAvailableQtyInUtxo = constants.minAvailableQtyInUtxo;
 var nftPrice = constants.nftPrice;
 
-var con = mysql.createConnection({
+var con = mysql.createPool({
     host     : 'localhost',
     user     : 'nft',
     password : 'nftpassword',
