@@ -1,5 +1,5 @@
 module.exports = {
-    policyIdTestNFT: 'a901c65f92f11989898d3613167daceb17390baf65bf2e8a04b9be59',
+    policyIdTestNFT: 'ff711506aea069d5d283d934432e2058e3d775fa22c45cb678c658fd',
     testNFTPath: '/home/anon/nft/cardanochess/',
     adaWithToken: 1500000, // 10000000 = 10 ADA
     publisherName: 'https://cardanochess.com', // adachess.com
