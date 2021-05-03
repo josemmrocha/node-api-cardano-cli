@@ -389,7 +389,7 @@ async function submitTx(usePath) {
 }
 
 async function createmetadataFile(jsonstr, usePath) {
-    var url = `http://localhost:4200/api/createMetadataFile/${jsonstr}/${usePath}`;
+    var url = `http://localhost:4200/api/createMetadataFile/${usePath}`;
 
     try {
         let res = await axios.post(url, JSON.parse(jsonstr));
